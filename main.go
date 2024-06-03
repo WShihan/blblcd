@@ -14,7 +14,8 @@ import (
 func main() {
 	cookie := flag.String("cookie", "cookie.text", "保存cookie的文件，类型为text")
 	mid := flag.Int("mid", 0, "up主mid，爬取该up主若干视频评论")
-	pages := flag.Int("pages", 5, "获取的页数,仅当指定mid时有效")
+	pages := flag.Int("pages", 3, "获取的页数,仅当指定mid时有效")
+	skip := flag.Int("skip", 0, "跳过视频的页数，仅当指定mid时有效")
 	vorder := flag.String("vorder", "pubdate", "爬取up主视频列表时排序方式，最新发布：pubdate最多播放：click最多收藏：stow")
 	bvid := flag.String("bvid", "", "视频bvid，爬取该视频评论")
 	corder := flag.Int("corder", 2, "爬取视频评论，排序方式，0 3：仅按热度，1：按热度+按时间，2：仅按时间")
@@ -24,6 +25,7 @@ func main() {
 	opt := model.Option{
 		Mid:    *mid,
 		Pages:  *pages,
+		Skip:   *skip,
 		Vorder: *vorder,
 		Bvid:   *bvid,
 		Corder: *corder,

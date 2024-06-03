@@ -74,13 +74,14 @@ func NewCMT(item *model.ReplyItem) model.Comment {
 
 func FindUserComments(opt *model.Option) {
 	var wg sync.WaitGroup
-	round := 1
+	round := opt.Skip + 1
+	pn := 30
+
 	videoListInfo, err := FetchVideoList(opt.Mid, round, opt.Vorder, opt.Cookie)
 	if err != nil {
 		slog.Error(err.Error())
 	}
-	total := videoListInfo.Data.Page.Count
-	var videoCollection = make([]model.VideoItem, total)
+	var videoCollection = make([]model.VideoItem, opt.Pages*pn)
 	var videoListSlice = videoCollection[:0]
 	videoListSlice = append(videoListSlice, videoListInfo.Data.List.Vlist...)
 	for round < opt.Pages {
@@ -97,7 +98,7 @@ func FindUserComments(opt *model.Option) {
 	}
 
 	slog.Info(fmt.Sprintf("%d查找到%d条视频", opt.Mid, len(videoListSlice)))
-	for _, k := range videoCollection[:1] {
+	for _, k := range videoCollection[:] {
 		wg.Add(1)
 		time.Sleep(3 * 1e9)
 		slog.Info(fmt.Sprintf("------启动爬取%d------", k.Aid))

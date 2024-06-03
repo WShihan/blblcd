@@ -71,6 +71,8 @@ Usage of blblcd:
     	保存cookie的文件，类型为text (default "cookie.text")
   -corder int
     	爬取视频评论，排序方式，0 3：仅按热度，1：按热度+按时间，2：仅按时间 (default 2)
+  -skip int
+    	跳过视频的页数，仅当指定mid时有效（default 0）
   -mid int
     	up主mid，爬取该up主若干视频评论
   -output string
