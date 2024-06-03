@@ -12,10 +12,9 @@ type Comment struct {
 	Fansgrade     int    //是否粉丝标签
 	Ctime         int    //评论时间戳
 	Like          int    //喜欢数
-	Following     int    //是否关注
+	Following     bool   //是否关注
 	Current_level int    //当前等级
 	Location      string //位置
-	Time_desc     string //时间间隔
 }
 
 type ReplyItem struct {
@@ -35,9 +34,6 @@ type ReplyItem struct {
 	MidStr    string `json:"mid_str"`
 	OidStr    string `json:"oid_str"`
 	RpidStr   string `json:"rpid_str"`
-	RootStr   string `json:"root_str"`
-	ParentStr string `json:"parent_str"`
-	DialogStr string `json:"dialog_str"`
 	Like      int    `json:"like"`
 	Action    int    `json:"action"`
 	Member    struct {
@@ -49,31 +45,52 @@ type ReplyItem struct {
 		Rank           string `json:"rank"`
 		FaceNftNew     int    `json:"face_nft_new"`
 		IsSeniorMember int    `json:"is_senior_member"`
-		Following      int    `json:"following"`
-		Senior         struct {
-		} `json:"senior"`
-		LevelInfo struct {
+		LevelInfo      struct {
 			CurrentLevel int `json:"current_level"`
 			CurrentMin   int `json:"current_min"`
 			CurrentExp   int `json:"current_exp"`
 			NextExp      int `json:"next_exp"`
 		} `json:"level_info"`
+		Vip struct {
+			VipType       int    `json:"vipType"`
+			VipDueDate    int64  `json:"vipDueDate"`
+			DueRemark     string `json:"dueRemark"`
+			AccessStatus  int    `json:"accessStatus"`
+			VipStatus     int    `json:"vipStatus"`
+			VipStatusWarn string `json:"vipStatusWarn"`
+		} `json:"vip"`
+		FansDetail any `json:"fans_detail"`
 	} `json:"member"`
 	Content struct {
 		Message string `json:"message"`
 		Members []any  `json:"members"`
+		Emote   struct {
+			NAMING_FAILED struct {
+				ID        int    `json:"id"`
+				PackageID int    `json:"package_id"`
+				State     int    `json:"state"`
+				Type      int    `json:"type"`
+				Attr      int    `json:"attr"`
+				Text      string `json:"text"`
+				URL       string `json:"url"`
+				Meta      struct {
+					Size int `json:"size"`
+				} `json:"meta"`
+				Mtime     int    `json:"mtime"`
+				JumpTitle string `json:"jump_title"`
+			} `json:"[吃瓜]"`
+		} `json:"emote"`
 		JumpURL struct {
 		} `json:"jump_url"`
 		MaxLine int `json:"max_line"`
 	} `json:"content"`
 	Replies      []ReplyItem `json:"replies"`
+	Invisible    bool        `json:"invisible"`
 	ReplyControl struct {
-		MaxLine           int    `json:"max_line"`
-		SubReplyEntryText string `json:"sub_reply_entry_text"`
-		SubReplyTitleText string `json:"sub_reply_title_text"`
-		TimeDesc          string `json:"time_desc"`
-		Location          string `json:"location"`
-		FoldPictures      bool   `json:"fold_pictures"`
+		Following bool   `json:"following"`
+		MaxLine   int    `json:"max_line"`
+		TimeDesc  string `json:"time_desc"`
+		Location  string `json:"location"`
 	} `json:"reply_control"`
 }
 
@@ -82,16 +99,13 @@ type CommentResponse struct {
 	Message string `json:"message"`
 	TTL     int    `json:"ttl"`
 	Data    struct {
-		Cursor struct {
-			IsBegin   bool   `json:"is_begin"`
-			Prev      int    `json:"prev"`
-			Next      int    `json:"next"`
-			IsEnd     bool   `json:"is_end"`
-			Mode      int    `json:"mode"`
-			ModeText  string `json:"mode_text"`
-			AllCount  int    `json:"all_count"`
-			SessionID string `json:"session_id"`
-		} `json:"cursor"`
-		Replies []ReplyItem `json:"replies"`
+		Page struct {
+			Num    int `json:"num"`
+			Size   int `json:"size"`
+			Count  int `json:"count"`
+			Acount int `json:"acount"`
+		} `json:"page"`
+		Replies    []ReplyItem `json:"replies"`
+		TopReplies []ReplyItem `json:"top_replies"`
 	} `json:"data"`
 }

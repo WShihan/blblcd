@@ -12,6 +12,12 @@ import (
 )
 
 func FetchVideoList(mid int, page int, order string, cookie string) (videoList model.VideoListResponse, err error) {
+	defer func() {
+		if err := recover(); err != nil {
+			slog.Error(fmt.Sprintf("爬取up主视频列表失败,mid:%d", mid))
+			slog.Error(fmt.Sprint(err))
+		}
+	}()
 	api := "https://api.bilibili.com/x/space/wbi/arc/search?"
 	params := url.Values{}
 	params.Set("mid", fmt.Sprint(mid))
@@ -41,8 +47,7 @@ func FetchVideoList(mid int, page int, order string, cookie string) (videoList m
 	jsonByte, _ := io.ReadAll(resp.Body)
 	slog.Info(resp.Status)
 	json.Unmarshal(jsonByte, &videoList)
-	// fmt.Printf("%v", videoList)
-	slog.Info("finish vidoe list index:" + fmt.Sprint(page))
+	slog.Info(fmt.Sprintf("爬取up主视频列表成功,mid:%d，第%d页", mid, page))
 	return
 
 }

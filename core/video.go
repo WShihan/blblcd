@@ -17,17 +17,25 @@ var (
 	Host      string = "https://www.bilibili.com"
 )
 
-func FetchComment(oid string, next int, mode int, cookie string) (data model.CommentResponse, err error) {
+func FetchComment(oid string, next int, order int, cookie string) (data model.CommentResponse, err error) {
+	defer func() {
+		if err := recover(); err != nil {
+			slog.Error(fmt.Sprintf("爬取评论失败,oid:%s，第%d页失败", oid, next))
+			slog.Error(fmt.Sprint(err))
+		}
+	}()
 	client := http.Client{}
 	payload := strings.NewReader("")
 
 	params := url.Values{}
 	params.Set("oid", oid)
 	params.Set("type", "1")
-	params.Set("mode", fmt.Sprint(mode))
-	params.Set("next", fmt.Sprint(next))
+	params.Set("sort", fmt.Sprint(order))
+	params.Set("nohot", "1")
+	params.Set("ps", "20")
+	params.Set("pn", fmt.Sprint(next))
 
-	url := "https://api.bilibili.com/x/v2/reply/wbi/main?" + params.Encode()
+	url := "https://api.bilibili.com/x/v2/reply?" + params.Encode()
 	newUrl, err := SignAndGenerateURL(url, cookie)
 	if err != nil {
 		slog.Error(err.Error())
@@ -55,9 +63,7 @@ func FetchComment(oid string, next int, mode int, cookie string) (data model.Com
 	defer body.Close()
 	dataStr, _ := io.ReadAll(res.Body)
 	json.Unmarshal(dataStr, &data)
-	fmt.Println(res.Status)
-	fmt.Println(newUrl)
-	slog.Info("finish vidoe comment oid:" + fmt.Sprint(oid) + ", index:" + fmt.Sprint(next))
+	slog.Info(fmt.Sprintf("完成评论获取，oid: %s, 第%d页", oid, next))
 	return
 
 }

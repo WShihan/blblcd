@@ -6,51 +6,70 @@ import (
 	"fmt"
 	"log/slog"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
 
-func FindComment(wg *sync.WaitGroup, avid int, opt *model.Option) {
+func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Option) {
 	defer func() {
+		if err := recover(); err != nil {
+			slog.Error(fmt.Sprintf("爬取视频：%d失败", avid))
+			slog.Error(fmt.Sprint(err))
+		}
 		wg.Done()
+		<-sem
 	}()
+
 	oid := strconv.Itoa(avid)
-	round := 0
+	round := 1
 
-	cmtInfo, _ := FetchComment(oid, 0, opt.Corder, opt.Cookie)
-	total := cmtInfo.Data.Cursor.AllCount
-
-	cmtCollection := make([]model.ReplyItem, total)
-	collectionSlice := cmtCollection[:0]
-	collectionSlice = append(collectionSlice, cmtInfo.Data.Replies...)
 	for {
-		round++
-		// 停顿3s，模拟手工点击
+		replyCollection := []model.ReplyItem{}
+
+		// 停顿3s
 		time.Sleep(3 * 1e9)
 		slog.Info(fmt.Sprintf("爬取视频评论%s", oid))
 		cmtInfo, _ := FetchComment(oid, round, opt.Corder, opt.Cookie)
-		total := cmtInfo.Data.Cursor.AllCount
-		if len(cmtInfo.Data.Replies) != 0 && len(collectionSlice) < total {
-			collectionSlice = append(collectionSlice, cmtInfo.Data.Replies...)
-			for _, k := range cmtInfo.Data.Replies {
-				if len(k.Replies) > 0 {
-					collectionSlice = append(collectionSlice, k.Replies...)
-				}
-			}
-		} else {
+		round++
+		if cmtInfo.Code != 0 {
+			slog.Error(fmt.Sprintf("请求评论失败，视频%s，第%d页失败", oid, round))
+			slog.Error(cmtInfo.Message)
 			break
 		}
+		total := cmtInfo.Data.Page.Acount
+		if len(cmtInfo.Data.Replies) != 0 && len(replyCollection) < total {
+			replyCollection = append(replyCollection, cmtInfo.Data.Replies...)
+			for _, k := range cmtInfo.Data.Replies {
+				if len(k.Replies) > 0 {
+					replyCollection = append(replyCollection, k.Replies...)
+				}
+			}
+			if len(cmtInfo.Data.TopReplies) != 0 {
+				replyCollection = append(replyCollection, cmtInfo.Data.TopReplies...)
+				for _, k := range cmtInfo.Data.TopReplies {
+					if len(k.Replies) > 0 {
+						replyCollection = append(replyCollection, k.Replies...)
+					}
+				}
+			}
+		}
+		if len(replyCollection) == 0 {
+			slog.Info(fmt.Sprintf("视频%s，第%d页未获取到评论", oid, round))
+			break
+		}
+
+		var cmtCollection = []model.Comment{}
+		for _, k := range replyCollection[:] {
+			cmt := NewCMT(&k)
+			cmtCollection = append(cmtCollection, cmt)
+		}
+		ok := store.Save2CSV(oid, cmtCollection[:], opt.Output)
+		if ok {
+			slog.Info(fmt.Sprintf("--爬取评论%s，第%d页完成！--", oid, round))
+		}
 	}
-	var cmts = make([]model.Comment, total)
-	sliceCmt := cmts[:0]
-	for _, k := range cmtCollection[:] {
-		cmt := NewCMT(&k)
-		sliceCmt = append(sliceCmt, cmt)
-	}
-	ok := store.Save2CSV(oid, cmts[:], opt.Output)
-	if ok {
-		slog.Info("--爬取完成！--")
-	}
+
 }
 
 func NewCMT(item *model.ReplyItem) model.Comment {
@@ -65,44 +84,53 @@ func NewCMT(item *model.ReplyItem) model.Comment {
 		Parent:        item.Parent,
 		Ctime:         item.Ctime,
 		Like:          item.Like,
-		Following:     item.Member.Following,
+		Following:     item.ReplyControl.Following,
 		Current_level: item.Member.LevelInfo.CurrentLevel,
-		Location:      item.ReplyControl.Location,
-		Time_desc:     item.ReplyControl.TimeDesc,
+		Location:      strings.Replace(item.ReplyControl.Location, "IP属地：", "", -1),
 	}
 }
 
-func FindUserComments(opt *model.Option) {
-	var wg sync.WaitGroup
-	round := opt.Skip + 1
-	pn := 30
+func FindUser(sem chan struct{}, opt *model.Option) {
+	defer func() {
+		if err := recover(); err != nil {
+			slog.Error(fmt.Sprintf("爬取up：%d失败", opt.Mid))
+			slog.Error(fmt.Sprint(err))
+		}
+	}()
 
-	videoListInfo, err := FetchVideoList(opt.Mid, round, opt.Vorder, opt.Cookie)
-	if err != nil {
-		slog.Error(err.Error())
-	}
-	var videoCollection = make([]model.VideoItem, opt.Pages*pn)
-	var videoListSlice = videoCollection[:0]
-	videoListSlice = append(videoListSlice, videoListInfo.Data.List.Vlist...)
-	for round < opt.Pages {
-		round += 1
-		// 停顿2s，避开机器扫描
+	wg := sync.WaitGroup{}
+	round := opt.Skip + 1
+	var videoCollection = []model.VideoItem{}
+	for round < opt.Pages+opt.Skip {
+		// 停顿2s
 		time.Sleep(2 * 1e9)
 		slog.Info(fmt.Sprintf("爬取视频列表第%d页", round))
 		tempVideoInfo, _ := FetchVideoList(opt.Mid, round, opt.Vorder, opt.Cookie)
+		round++
+		if tempVideoInfo.Code != 0 {
+			slog.Error(fmt.Sprintf("请求up主视频列表失败，第%d页失败", round))
+			slog.Error(tempVideoInfo.Message)
+		}
 		if len(tempVideoInfo.Data.List.Vlist) != 0 {
-			videoListSlice = append(videoListSlice, tempVideoInfo.Data.List.Vlist...)
+			videoCollection = append(videoCollection, tempVideoInfo.Data.List.Vlist...)
+
 		} else {
 			break
 		}
 	}
 
-	slog.Info(fmt.Sprintf("%d查找到%d条视频", opt.Mid, len(videoListSlice)))
+	if len(videoCollection) == 0 {
+		slog.Info(fmt.Sprintf("up主：%d未获取到视频", opt.Mid))
+		return
+	}
+
+	slog.Info(fmt.Sprintf("%d查找到%d条视频", opt.Mid, len(videoCollection)))
 	for _, k := range videoCollection[:] {
-		wg.Add(1)
 		time.Sleep(3 * 1e9)
 		slog.Info(fmt.Sprintf("------启动爬取%d------", k.Aid))
-		go FindComment(&wg, k.Aid, opt)
+		wg.Add(1)
+		sem <- struct{}{}
+		go FindComment(sem, &wg, k.Aid, opt)
 	}
 	wg.Wait()
 }

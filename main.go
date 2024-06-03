@@ -18,8 +18,9 @@ func main() {
 	skip := flag.Int("skip", 0, "跳过视频的页数，仅当指定mid时有效")
 	vorder := flag.String("vorder", "pubdate", "爬取up主视频列表时排序方式，最新发布：pubdate最多播放：click最多收藏：stow")
 	bvid := flag.String("bvid", "", "视频bvid，爬取该视频评论")
-	corder := flag.Int("corder", 2, "爬取视频评论，排序方式，0 3：仅按热度，1：按热度+按时间，2：仅按时间")
+	corder := flag.Int("corder", 0, "爬取视频评论，排序方式，0：按时间，1：按点赞数，2：按回复数")
 	output := flag.String("output", "./output", "评论文件输出位置，默认程序运行位置")
+	goroutines := flag.Int("goroutines", 5, "爬并发数量")
 	flag.Parse()
 
 	opt := model.Option{
@@ -29,8 +30,15 @@ func main() {
 		Vorder: *vorder,
 		Bvid:   *bvid,
 		Corder: *corder,
-		Output: *output,
 	}
+	sem := make(chan struct{}, *goroutines)
+
+	if *mid != 0 {
+		opt.Output = *output + "/" + fmt.Sprint(*mid)
+	} else {
+		opt.Output = *output
+	}
+
 	if !utils.FileOrPathExists(opt.Output) {
 		os.MkdirAll(opt.Output, os.ModePerm)
 	}
@@ -57,11 +65,11 @@ func main() {
 	}
 
 	if opt.Mid != 0 {
-		core.FindUserComments(&opt)
+		core.FindUser(sem, &opt)
 	} else if opt.Bvid != "" {
 		wg := sync.WaitGroup{}
 		wg.Add(1)
-		go core.FindComment(&wg, int(core.Bvid2Avid(fmt.Sprint(opt.Bvid))), &opt)
+		go core.FindComment(sem, &wg, int(core.Bvid2Avid(fmt.Sprint(opt.Bvid))), &opt)
 		wg.Wait()
 
 	} else {
