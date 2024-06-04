@@ -25,7 +25,6 @@ Blblcd（Bilibili-comment-dowloader）——基于[bilibili-API-collect](https:/
 	Following     是否关注
 	Current_level 当前等级
 	Location      位置
-	Time_desc     时间间隔
 ```
 
 下载后单个视频的所有评论保存为一份csv。
@@ -62,30 +61,6 @@ Blblcd（Bilibili-comment-dowloader）——基于[bilibili-API-collect](https:/
 ```bash
 blblcd -help
 ```
-
-```plain
-Usage of blblcd:
-  -bvid string
-    	视频bvid，爬取该视频评论
-  -cookie string
-    	保存cookie的文件，类型为text (default "cookie.text")
-  -corder int
-    	爬取视频评论，排序方式，0 3：仅按热度，1：按热度+按时间，2：仅按时间 (default 2)
-  -skip int
-    	跳过视频的页数，仅当指定mid时有效（default 0）
-  -mid int
-    	up主mid，爬取该up主若干视频评论
-  -output string
-    	评论文件输出位置，默认程序运行位置 (default "./output")
-  -pages int
-    	获取的页数,仅当指定mid时有效 (default 5)
-  -vorder string
-    	爬取up主视频列表时排序方式，最新发布：pubdate最多播放：click最多收藏：stow (default "pubdate")
-
-```
-
-
-
 
 
 
