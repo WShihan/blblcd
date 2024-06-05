@@ -1,9 +1,8 @@
-package main
+package core
 
 import (
 	"testing"
 )
 
 func TestString2Markdown(t *testing.T) {
-	// fmt.Println(core.SignAndGenerateURL(""))
 }
