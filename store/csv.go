@@ -33,6 +33,9 @@ func CMT2Record(cmt model.Comment) (record []string) {
 }
 
 func Save2CSV(filename string, cmts []model.Comment, ooutput string) (ok bool) {
+	if len(cmts) == 0 {
+		return
+	}
 	csv_path := fmt.Sprintf("%s/data_%s.csv", ooutput, filename)
 	if utils.FileOrPathExists(csv_path) {
 		file, err := os.OpenFile(csv_path, os.O_WRONLY|os.O_APPEND, 0644)

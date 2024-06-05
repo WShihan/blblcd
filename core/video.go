@@ -62,6 +62,7 @@ func FetchComment(oid string, next int, order int, cookie string) (data model.Co
 	body := res.Body
 	defer body.Close()
 	dataStr, _ := io.ReadAll(res.Body)
+	// fmt.Println(string(dataStr))
 	json.Unmarshal(dataStr, &data)
 	slog.Info(fmt.Sprintf("完成评论获取，oid: %s, 第%d页", oid, next))
 	return
