@@ -21,15 +21,17 @@ func main() {
 	corder := flag.Int("corder", 0, "爬取视频评论，排序方式，0：按时间，1：按点赞数，2：按回复数")
 	output := flag.String("output", "./output", "评论文件输出位置，默认程序运行位置")
 	goroutines := flag.Int("goroutines", 5, "爬并发数量")
+	geojson := flag.Bool("geojson", false, "是否汇总位置分布并输出为geojson文件")
 	flag.Parse()
 
 	opt := model.Option{
-		Mid:    *mid,
-		Pages:  *pages,
-		Skip:   *skip,
-		Vorder: *vorder,
-		Bvid:   *bvid,
-		Corder: *corder,
+		Mid:     *mid,
+		Pages:   *pages,
+		Skip:    *skip,
+		Vorder:  *vorder,
+		Bvid:    *bvid,
+		Corder:  *corder,
+		Geojson: *geojson,
 	}
 	sem := make(chan struct{}, *goroutines)
 
