@@ -32,7 +32,7 @@ Blblcd（Bilibili-comment-dowloader）——基于[bilibili-API-collect](https:/
 使用
 ====
 
-## 基础信息
+## 需要准备
 
 * cookie ：必须
 * mid ：up主代码，当查找up视频时必须
@@ -46,11 +46,25 @@ Blblcd（Bilibili-comment-dowloader）——基于[bilibili-API-collect](https:/
 
 ![image-20240603170934244](https://md-1301600412.cos.ap-nanjing.myqcloud.com/pic/typora/image-20240603170934244.png)
 
+
+
+
+
 #### 获取up主mid
 
 进入up主页，浏览器地址栏上将会显示mid，复制它，例如下面链接里的mid为`112233445`。
 
 ![image-20240605170502785](https://md-1301600412.cos.ap-nanjing.myqcloud.com/pic/typora/image-20240605170502785.png)
+
+#### 获取视频bvid
+
+进入视频页面，查看浏览器地址栏，URL第二段就是bvid，例如`BV1Cm421T7Zg`
+
+![image-20240607212158235](https://md-1301600412.cos.ap-nanjing.myqcloud.com/pic/typora/image-20240607212158235.png)
+
+
+
+
 
 ## 使用命令
 

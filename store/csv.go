@@ -11,10 +11,6 @@ import (
 	"strings"
 )
 
-func parseInt32(num int32) string {
-	return fmt.Sprint(num)
-}
-
 func parseInt64(num int64) string {
 	return fmt.Sprint(num)
 }
