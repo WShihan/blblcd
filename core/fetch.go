@@ -5,6 +5,7 @@ import (
 	"blblcd/store"
 	"fmt"
 	"log/slog"
+	"math/rand"
 	"strconv"
 	"strings"
 	"sync"
@@ -23,12 +24,13 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 
 	oid := strconv.Itoa(avid)
 	round := 1
-
+	recordedMap := make(map[int64]bool)
 	for {
 		replyCollection := []model.ReplyItem{}
 
-		// 停顿3s
-		time.Sleep(3 * 1e9)
+		// 停顿
+		delay := (rand.Float32() + 1) * 1e9
+		time.Sleep(time.Duration(delay))
 		slog.Info(fmt.Sprintf("爬取视频评论%s", oid))
 		cmtInfo, _ := FetchComment(oid, round, opt.Corder, opt.Cookie)
 		round++
@@ -55,18 +57,24 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 			}
 		}
 		if len(replyCollection) == 0 {
-			slog.Info(fmt.Sprintf("视频%s，第%d页未获取到评论", oid, round))
+			slog.Info(fmt.Sprintf("-----视频%s，第%d页未获取到评论-----", oid, round))
 			break
 		}
 
 		var cmtCollection = []model.Comment{}
 		for _, k := range replyCollection[:] {
-			cmt := NewCMT(&k)
-			cmtCollection = append(cmtCollection, cmt)
+			if _, ok := recordedMap[k.Rpid]; !ok {
+				cmt := NewCMT(&k)
+				recordedMap[cmt.Rpid] = true
+				cmtCollection = append(cmtCollection, cmt)
+			} else {
+				slog.Info(fmt.Sprintf("评论%d已存在，跳过", k.Rpid))
+			}
+
 		}
-		ok := store.Save2CSV(oid, cmtCollection[:], opt.Output)
+		ok := store.Save2CSV(oid, cmtCollection, opt.Output)
 		if ok {
-			slog.Info(fmt.Sprintf("--爬取评论%s，第%d页完成！--", oid, round))
+			slog.Info(fmt.Sprintf("-----爬取评论%s，第%d页完成！----", oid, round))
 		}
 	}
 
@@ -101,7 +109,7 @@ func FindUser(sem chan struct{}, opt *model.Option) {
 	wg := sync.WaitGroup{}
 	round := opt.Skip + 1
 	var videoCollection = []model.VideoItem{}
-	for round < opt.Pages+opt.Skip {
+	for round <= opt.Pages+opt.Skip {
 		// 停顿2s
 		time.Sleep(2 * 1e9)
 		slog.Info(fmt.Sprintf("爬取视频列表第%d页", round))
