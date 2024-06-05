@@ -25,6 +25,7 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 	oid := strconv.Itoa(avid)
 	round := 1
 	recordedMap := make(map[int64]bool)
+	locationStat := map[string]int{}
 	for {
 		replyCollection := []model.ReplyItem{}
 
@@ -67,6 +68,9 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 				cmt := NewCMT(&k)
 				recordedMap[cmt.Rpid] = true
 				cmtCollection = append(cmtCollection, cmt)
+				if opt.Geojson {
+					locationStat[cmt.Location] += 1
+				}
 			} else {
 				slog.Info(fmt.Sprintf("评论%d已存在，跳过", k.Rpid))
 			}
@@ -76,6 +80,9 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 		if ok {
 			slog.Info(fmt.Sprintf("-----爬取评论%s，第%d页完成！----", oid, round))
 		}
+	}
+	if opt.Geojson {
+		store.WriteGeoJSON(locationStat, oid, opt.Output)
 	}
 
 }
