@@ -28,3 +28,4 @@ go.work.sum
 *cookie*.text
 *test*.json
 build/
+*.qgz

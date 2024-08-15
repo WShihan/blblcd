@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>{{ .Title }} 评论分布</title>
+    <script src="https://cdn.jsdelivr.net/npm/openlayers@4.6.5/dist/ol.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/openlayers@4.6.5/dist/ol.min.css" />
+    <style>
+      #map {
+        cursor: pointer;
+      }
+      .popup {
+        position: absolute;
+        left: 12px;
+        min-width: 200px;
+        min-height: 200px;
+        padding: 10px;
+        border: 1px solid gray;
+        border-radius: 5px;
+        display: none;
+        z-index: 1000;
+        background: rgb(236, 236, 236);
+      }
+      .popup .header {
+        font-weight: bolder;
+        text-align: center;
+      }
+      .popup .content {
+        font-size: 14px;
+        line-height: .5rem;
+        color: rgb(89, 86, 86);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map" style="width: 100%; height: 95vh"></div>
+    <div id="popup" class="popup"></div>
+    <script type="text/javascript">
+      // 定义色带函数
+      function getColor(value) {
+        if(value === 0){
+          return 'rgb(100, 100, 100)';
+        }
+        return `rgb(255, ${255 - value * 5}, ${255 - value * 5})`;
+      }
+
+      let map = new ol.Map({
+        target: 'map',
+        controls: ol.control.defaults({
+          attributionOptions: {
+            collapsible: true,
+          },
+        }),
+        layers: [
+          new ol.layer.Tile({
+            name: 'street',
+            zIndex: 0,
+            source: new ol.source.XYZ({
+              url: 'https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+            }),
+          }),
+        ],
+        view: new ol.View({
+          center: ol.proj.fromLonLat([100, 33]),
+          zoom: 3,
+          maxZoom: 15,
+          minZoom: 3,
+        }),
+      });
+      let data = '{{ .China }}';
+      if (data != '') {
+        map.addLayer(
+          new ol.layer.Vector({
+            source: new ol.source.Vector({
+              features: new ol.format.GeoJSON().readFeatures(JSON.parse(data)),
+            }),
+            style: feature => {
+              const value = feature.get('count');
+              const color = getColor(value);
+              return new ol.style.Style({
+                fill: new ol.style.Fill({ color: color }),
+              });
+            },
+          })
+        );
+      }
+      // 动作
+      // 创建一个弹出框
+      const popup = document.getElementById('popup');
+      let originStyle = undefined;
+      let highlightFeat = undefined;
+
+      // 鼠标移动事件
+      map.on('pointermove', function (evt) {
+        const feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+          return feature;
+        });
+
+        if (feature) {
+          if (typeof highlightFeat !== 'undefined') {
+            highlightFeat.setStyle(originStyle);
+          }
+          highlightFeat = feature;
+          originStyle = highlightFeat.getStyle();
+          // 高亮要素
+          feature.setStyle(
+            new ol.style.Style({
+              fill: new ol.style.Fill({ color: 'yellow' }),
+              stroke: new ol.style.Stroke({ color: 'rgb(239, 193, 43)', width: 2 }),
+            })
+          );
+
+          // 显示弹出框
+          const coordinates = feature.getGeometry().getCoordinates();
+          const name = feature.get('name');
+          const count = feature.get('count');
+          const female = feature.get('female');
+          const male = feature.get('male');
+          const sexless = feature.get('sexless');
+          const like = feature.get('like');
+          const level0 = feature.get('level0');
+          const level1 = feature.get('level1');
+          const level2 = feature.get('level2');
+          const level3 = feature.get('level3');
+          const level4 = feature.get('level4');
+          const level5 = feature.get('level5');
+          const level6 = feature.get('level6');
+          const stat = {
+            "地区": name,
+            "评论数量": count,
+            "点赞数量": like,
+            "性别数量": {
+              "男": male,
+              "女": female,
+              "保密": sexless,
+            },
+            "等级": {
+              "等级1": level0,
+              "等级2": level1,
+              "等级3": level2,
+              "等级4": level3,
+              "等级5": level4,
+              "等级6": level5,
+              "等级7": level6,
+            }
+          }
+          let info = ''
+          for(let key in stat){
+            if (typeof stat[key] === 'object') {
+              info += `<p><strong>${key}</strong></p>`
+              for(let k in stat[key]){
+                info += `<p>${k}: ${stat[key][k]}</p>`
+              }
+            } else{
+              info += `<p>${key}: ${stat[key]}</p>`
+            }
+          }
+
+          const infoHtml = `<div class="header"><strong>统计信息</strong></div>
+          <div class="content">
+            ${info}
+          </div>
+          `;
+
+          popup.innerHTML = infoHtml;
+          popup.style.display = 'block';
+          popup.style.left = evt.pixel[0] + 50 + 'px';
+          popup.style.top = evt.pixel[1] - 100 + 'px';
+        } else {
+          if (typeof highlightFeat !== 'undefined') {
+            highlightFeat.setStyle(originStyle);
+            highlightFeat = undefined;
+            popup.style.display = 'none';
+          }
+          // 隐藏弹出框
+        }
+      });
+    </script>
+  </body>
+</html>

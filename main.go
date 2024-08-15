@@ -21,7 +21,7 @@ func main() {
 	corder := flag.Int("corder", 0, "爬取视频评论，排序方式，0：按时间，1：按点赞数，2：按回复数")
 	output := flag.String("output", "./output", "评论文件输出位置，默认程序运行位置")
 	goroutines := flag.Int("goroutines", 5, "爬并发数量")
-	geojson := flag.Bool("geojson", false, "是否汇总位置分布并输出为geojson文件")
+	geojson := flag.Bool("geojson", false, "是否根据位置分布统计并输出为geojson文件， 是：ture,否：false, 默认否")
 	flag.Parse()
 
 	opt := model.Option{

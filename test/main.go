@@ -1,57 +1,52 @@
 package main
 
 import (
-	"encoding/json"
+	"blblcd/assets"
 	"fmt"
+	"html/template"
+	"log"
+	"net/http"
 	"os"
-
-	"github.com/paulmach/orb/geojson"
 )
 
-func WriteGeoJSON(filePath string, statMap map[string]int) {
-	// 读取GeoJSON文件
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		fmt.Println("读取文件错误", err)
-		return
-	}
-
-	// 解析GeoJSON数据
-	fc := geojson.NewFeatureCollection()
-	err = json.Unmarshal(data, &fc)
-	if err != nil {
-		fmt.Println("解析GeoJSON错误:", err)
-		return
-	}
-
-	// 遍历每个Feature并修改字段值
-	for _, feat := range fc.Features {
-		province := feat.Properties["name"]
-		value := statMap[province.(string)]
-		feat.Properties["count"] = value
-	}
-
-	// 写入修改后的GeoJSON文件
-	outputData, err := json.MarshalIndent(fc, "", "  ")
-	if err != nil {
-		fmt.Println("转换GeoJSON错误:", err)
-		return
-	}
-
-	outputFilePath := "output.geojson"
-	err = os.WriteFile(outputFilePath, outputData, 0644)
-	if err != nil {
-		fmt.Println("写入geojson错误:", err)
-		return
-	}
-
-	fmt.Printf("-----写入geojson：%s成功----- output.geojson", outputFilePath)
+type Data struct {
+	Title string        `json:"title"`
+	China template.HTML `json:"china"`
 }
 
 func main() {
-	statMap := map[string]int{
-		"广东": 100,
-		"北京": 10,
-	}
-	WriteGeoJSON("../assets/China_3857.geojson", statMap)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
+		geojson, err := assets.Assets.ReadFile("China_3857.geojson")
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		// 创建数据
+		data := Data{Title: "Bvdfdf", China: template.HTML(string(geojson))}
+
+		tmpl, err := template.ParseFS(assets.Assets, "template.html")
+		if err != nil {
+			panic(err)
+		}
+
+		err = tmpl.Execute(w, data)
+		if err != nil {
+			log.Fatalf("Error executing template: %v", err)
+		}
+
+		//  写入文件
+		file, err := os.Create("output.html")
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+
+		err = tmpl.Execute(file, data)
+		if err != nil {
+			panic(err)
+		}
+	})
+
+	log.Println("Listening on http://localhost:8080/")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }

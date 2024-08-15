@@ -27,7 +27,19 @@ Blblcd（Bilibili-comment-dowloader）——基于[bilibili-API-collect](https:/
 	Location      位置
 ```
 
-下载后单个视频的所有评论保存为一份csv。
+下载后单个视频的所有评论保存为一份csv，也可统计输出为geojson，地图模板。
+
+效果
+===
+
+![image-20240816044423882](https://md-1301600412.cos.ap-nanjing.myqcloud.com/pic/typora/image-20240816044423882.png)
+
+
+
+![image-20240816044237687](https://md-1301600412.cos.ap-nanjing.myqcloud.com/pic/typora/image-20240816044237687.png)
+
+
+
 
 使用
 ====
@@ -74,7 +86,7 @@ Blblcd（Bilibili-comment-dowloader）——基于[bilibili-API-collect](https:/
 ./blblcd -help
 ```
 
-![image-20240605164108092](https://md-1301600412.cos.ap-nanjing.myqcloud.com/pic/typora/image-20240605164108092.png)
+![image-20240816044809014](https://md-1301600412.cos.ap-nanjing.myqcloud.com/pic/typora/image-20240816044809014.png)
 
 ### 示例
 
