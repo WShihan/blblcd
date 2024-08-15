@@ -25,10 +25,9 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 	oid := strconv.Itoa(avid)
 	round := 1
 	recordedMap := make(map[int64]bool)
-	locationStat := map[string]int{}
+	statMap := map[string]model.Stat{}
 	for {
 		replyCollection := []model.ReplyItem{}
-
 		// 停顿
 		delay := (rand.Float32() + 1) * 1e9
 		time.Sleep(time.Duration(delay))
@@ -69,20 +68,39 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 				recordedMap[cmt.Rpid] = true
 				cmtCollection = append(cmtCollection, cmt)
 				if opt.Geojson {
-					locationStat[cmt.Location] += 1
+					if value, exist := statMap[cmt.Location]; exist {
+						value.Location += 1
+						value.Sex[cmt.Sex] += 1
+						value.Like += cmt.Like
+						value.Level[cmt.Current_level] += 1
+						statMap[cmt.Location] = value
+					} else {
+						state := model.Stat{
+							Name:     cmt.Location,
+							Location: 1,
+							Sex:      map[string]int{"男": 0, "女": 0, "保密": 0},
+							Like:     cmt.Like,
+						}
+						state.Sex[cmt.Sex] += 1
+						state.Level[cmt.Current_level] += 1
+						statMap[cmt.Location] = state
+
+					}
 				}
 			} else {
 				slog.Info(fmt.Sprintf("评论%d已存在，跳过", k.Rpid))
 			}
 
 		}
-		ok := store.Save2CSV(oid, cmtCollection, opt.Output)
+		ok := store.Save2CSV(opt.Bvid, cmtCollection, opt.Output)
 		if ok {
 			slog.Info(fmt.Sprintf("-----爬取评论%s，第%d页完成！----", oid, round))
 		}
 	}
 	if opt.Geojson {
-		store.WriteGeoJSON(locationStat, oid, opt.Output)
+		store.WriteGeoJSON(statMap, opt.Bvid, opt.Output)
+		store.RenderHTML(fmt.Sprintf("%s/%s.geojson", opt.Output, opt.Bvid), fmt.Sprintf("%s/%s.html", opt.Output, opt.Bvid))
+
 	}
 
 }
