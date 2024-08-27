@@ -57,7 +57,7 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 			}
 		}
 		if len(replyCollection) == 0 {
-			slog.Info(fmt.Sprintf("-----视频%s，第%d页未获取到评论-----", oid, round))
+			slog.Info(fmt.Sprintf("-----视频%s，第%d页未获取到评论，停止爬取-----", oid, round))
 			break
 		}
 
@@ -92,19 +92,16 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 			}
 
 		}
-		ok := store.Save2CSV(opt.Bvid, cmtCollection, opt.Output)
-		if ok {
-			slog.Info(fmt.Sprintf("-----爬取评论%s，第%d页完成！----", oid, round))
-		}
+		go store.Save2CSV(opt.Bvid, cmtCollection, opt.Output)
 	}
 	if opt.Geojson {
 		store.WriteGeoJSON(statMap, opt.Bvid, opt.Output)
-		store.RenderHTML(fmt.Sprintf("%s/%s.geojson", opt.Output, opt.Bvid), fmt.Sprintf("%s/%s.html", opt.Output, opt.Bvid))
 
 	}
 
 }
 
+// 从评论回复列表提取感兴趣信息
 func NewCMT(item *model.ReplyItem) model.Comment {
 	return model.Comment{
 		Uname:         item.Member.Uname,
@@ -119,6 +116,7 @@ func NewCMT(item *model.ReplyItem) model.Comment {
 		Like:          item.Like,
 		Following:     item.ReplyControl.Following,
 		Current_level: item.Member.LevelInfo.CurrentLevel,
+		Pictures:      item.Content.Pictures,
 		Location:      strings.Replace(item.ReplyControl.Location, "IP属地：", "", -1),
 	}
 }
