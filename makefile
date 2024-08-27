@@ -1,6 +1,6 @@
 BINARY_NAME=blblcd
 BUILD_DIR=build
-VERSION = 0.0.3
+VERSION = 0.0.4
 default: build
 
 build:

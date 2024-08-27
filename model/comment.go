@@ -1,22 +1,26 @@
 package model
 
 type Comment struct {
-	Uname         string //姓名
-	Sex           string //性别
-	Content       string //评论内容
-	Rpid          int64  //评论id
-	Oid           int    //评论区id
-	Bvid          string //视频bv
-	Mid           int    //发送者id
-	Parent        int    //若为一级评论则为 0若为二级评论则为根评论 rpid大于二级评论为上一级评 论 rpid
-	Fansgrade     int    //是否粉丝标签
-	Ctime         int    //评论时间戳
-	Like          int    //喜欢数
-	Following     bool   //是否关注
-	Current_level int    //当前等级
-	Location      string //位置
+	Uname         string    //姓名
+	Sex           string    //性别
+	Content       string    //评论内容
+	Rpid          int64     //评论id
+	Oid           int       //评论区id
+	Bvid          string    //视频bv
+	Mid           int       //发送者id
+	Parent        int       //若为一级评论则为 0若为二级评论则为根评论 rpid大于二级评论为上一级评 论 rpid
+	Fansgrade     int       //是否粉丝标签
+	Ctime         int       //评论时间戳
+	Like          int       //喜欢数
+	Following     bool      //是否关注
+	Current_level int       //当前等级
+	Location      string    //位置
+	Pictures      []Picture // 图片
 }
 
+type Picture struct {
+	Img_src string `json:"img_src"`
+}
 type ReplyItem struct {
 	Rpid      int64  `json:"rpid"`
 	Oid       int    `json:"oid"`
@@ -62,9 +66,10 @@ type ReplyItem struct {
 		FansDetail any `json:"fans_detail"`
 	} `json:"member"`
 	Content struct {
-		Message string `json:"message"`
-		Members []any  `json:"members"`
-		Emote   struct {
+		Message  string    `json:"message"`
+		Pictures []Picture `json:"pictures"`
+		Members  []any     `json:"members"`
+		Emote    struct {
 			NAMING_FAILED struct {
 				ID        int    `json:"id"`
 				PackageID int    `json:"package_id"`

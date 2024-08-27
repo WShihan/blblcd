@@ -14,10 +14,11 @@ type Data struct {
 	China template.HTML
 }
 
-func RenderHTML(geofile string, htmlname string) (ok bool, err error) {
+func RenderHTML(geofile string, output string) (ok bool, err error) {
 	geojson, err := os.ReadFile(geofile)
+
 	HtmlData := Data{
-		Title: "Bvidfdodfd",
+		Title: "评论地区分布",
 		Name:  "John",
 		China: template.HTML(string(geojson)),
 	}
@@ -28,7 +29,7 @@ func RenderHTML(geofile string, htmlname string) (ok bool, err error) {
 	}
 
 	//  写入文件
-	file, err := os.Create(htmlname)
+	file, err := os.Create(output)
 	if err != nil {
 		panic(err)
 	}
@@ -38,7 +39,7 @@ func RenderHTML(geofile string, htmlname string) (ok bool, err error) {
 	if err != nil {
 		panic(err)
 	}
-	slog.Info(fmt.Sprintf("-------渲染html文件成功:%s--------", htmlname))
+	slog.Info(fmt.Sprintf("-------渲染html文件成功:%s--------", output))
 
 	return
 }

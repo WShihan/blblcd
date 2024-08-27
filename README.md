@@ -168,7 +168,13 @@ blblcd -mid 123344555  -goroutines 10
 
 
 
+#### 输出地图模板
 
+需要在程序所在位置添加`geo-template.geojson`，该资源已包含在release里。
+
+```bash
+blblcd -bvid BV1VJ4m1jk34K --geojson true
+```
 
 
 
@@ -176,4 +182,5 @@ blblcd -mid 123344555  -goroutines 10
 ====
 
 * 源代码仅供交流学习使用，切勿用于违法犯罪。
+* 使用该工具请遵守Bilibili相关规定
 * blblcd不会保存或泄露cookie，请放心食用。

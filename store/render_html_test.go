@@ -5,7 +5,7 @@ import (
 )
 
 func TestRenderHtm(t *testing.T) {
-	_, err := RenderHTML()
+	_, err := RenderHTML("", "")
 	if err != nil {
 		panic(err)
 	}

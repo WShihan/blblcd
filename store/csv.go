@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -28,11 +29,17 @@ func CMT2Record(cmt model.Comment) (record []string) {
 	}
 }
 
-func Save2CSV(filename string, cmts []model.Comment, ooutput string) (ok bool) {
+func Save2CSV(filename string, cmts []model.Comment, output string) {
+	defer func() {
+		if err := recover(); err != nil {
+			slog.Error("写入CSV错误:", err)
+		}
+	}()
+
 	if len(cmts) == 0 {
 		return
 	}
-	csv_path := fmt.Sprintf("%s/%s.csv", ooutput, filename)
+	csv_path := filepath.Join(output, filename+".csv")
 	if utils.FileOrPathExists(csv_path) {
 		file, err := os.OpenFile(csv_path, os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
@@ -42,13 +49,14 @@ func Save2CSV(filename string, cmts []model.Comment, ooutput string) (ok bool) {
 		defer file.Close()
 
 		writer := csv.NewWriter(file)
-		// writer := csv.NewWriter(transform.NewWriter(file, simplifiedchinese.GBK.NewEncoder()))
-
 		defer writer.Flush()
 
 		for _, cmt := range cmts {
 			if cmt.Uname == "" {
 				continue
+			}
+			if len(cmt.Pictures) != 0 {
+				go WriteImage(cmt.Uname, cmt.Pictures, output+"/"+"images")
 			}
 			record := CMT2Record(cmt)
 			err = writer.Write(record)
@@ -58,7 +66,6 @@ func Save2CSV(filename string, cmts []model.Comment, ooutput string) (ok bool) {
 		}
 
 		slog.Info(fmt.Sprintf("追加评论至csv文件成功，oid:%d", cmts[0].Oid))
-		ok = true
 
 	} else {
 		file, err := os.Create(csv_path)
@@ -69,7 +76,6 @@ func Save2CSV(filename string, cmts []model.Comment, ooutput string) (ok bool) {
 		defer file.Close()
 
 		writer := csv.NewWriter(file)
-		// writer := csv.NewWriter(transform.NewWriter(file, simplifiedchinese.GBK.NewEncoder()))
 		defer writer.Flush()
 		headers := "upname,sex,content,bvid,rpid,oid,mid,parent,fans_grade,ctime,like,following,level,location"
 		headerErr := writer.Write(strings.Split(headers, ","))
@@ -82,6 +88,9 @@ func Save2CSV(filename string, cmts []model.Comment, ooutput string) (ok bool) {
 			if cmt.Uname == "" {
 				continue
 			}
+			if len(cmt.Pictures) != 0 {
+				go WriteImage(cmt.Uname, cmt.Pictures, output+"/"+"images")
+			}
 			record := CMT2Record(cmt)
 			err := writer.Write(record)
 			if err != nil {
@@ -89,10 +98,7 @@ func Save2CSV(filename string, cmts []model.Comment, ooutput string) (ok bool) {
 				return
 			}
 		}
-
 		slog.Info(fmt.Sprintf("写入csv文件成功，oid:%d", cmts[0].Oid))
-		ok = true
 	}
-	return
 
 }
