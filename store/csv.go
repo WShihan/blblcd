@@ -21,8 +21,12 @@ func parseInt(num int) string {
 }
 
 func CMT2Record(cmt model.Comment) (record []string) {
+	picURLs := ""
+	for _, pic := range cmt.Pictures {
+		picURLs += pic.Img_src + ";"
+	}
 	return []string{
-		cmt.Uname, cmt.Sex, cmt.Content, cmt.Bvid,
+		cmt.Bvid, cmt.Uname, cmt.Sex, cmt.Content, picURLs,
 		parseInt64(cmt.Rpid), parseInt(cmt.Oid), parseInt(cmt.Mid),
 		parseInt(cmt.Parent), parseInt(cmt.Fansgrade), parseInt(cmt.Ctime),
 		parseInt(cmt.Like), fmt.Sprint(cmt.Following), parseInt(cmt.Current_level), cmt.Location,
@@ -77,7 +81,7 @@ func Save2CSV(filename string, cmts []model.Comment, output string) {
 
 		writer := csv.NewWriter(file)
 		defer writer.Flush()
-		headers := "upname,sex,content,bvid,rpid,oid,mid,parent,fans_grade,ctime,like,following,level,location"
+		headers := "bvid,upname,sex,content,pictrues,rpid,oid,mid,parent,fans_grade,ctime,like,following,level,location"
 		headerErr := writer.Write(strings.Split(headers, ","))
 		if headerErr != nil {
 			slog.Error(fmt.Sprintf("写入csv文件字段错误，oid:%d", cmts[0].Oid))
