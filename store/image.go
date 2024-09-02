@@ -3,16 +3,18 @@ package store
 import (
 	"blblcd/model"
 	"blblcd/utils"
+
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 )
 
-func DwonloadImg(wg *sync.WaitGroup, sem chan struct{}, imageUrl string, output string) {
+func DwonloadImg(wg *sync.WaitGroup, sem chan struct{}, imageUrl string, output string, prefix string) {
 	// 判断保存路径是否存在
 	if !utils.FileOrPathExists(output) {
 		os.MkdirAll(output, os.ModePerm)
@@ -30,7 +32,7 @@ func DwonloadImg(wg *sync.WaitGroup, sem chan struct{}, imageUrl string, output 
 	}
 	// 创建本地文件
 	imgName := strings.Split(imageUrl, "/")[len(strings.Split(imageUrl, "/"))-1]
-	outFile, err := os.Create(output + "/" + imgName)
+	outFile, err := os.Create(filepath.Join(output, prefix+"_"+imgName))
 	if err != nil {
 		slog.Error(fmt.Sprintf("创建文件错误:%s", err))
 		return
@@ -61,7 +63,7 @@ func WriteImage(uname string, pics []model.Picture, output string) {
 	for _, pic := range pics {
 		wg.Add(1)
 		sem <- struct{}{}
-		go DwonloadImg(&wg, sem, pic.Img_src, output+"/"+uname)
+		go DwonloadImg(&wg, sem, pic.Img_src, output, uname)
 	}
 	wg.Wait()
 
