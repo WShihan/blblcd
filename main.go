@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	cookie := flag.String("cookie", "cookie.text", "保存cookie的文件，类型为text")
+	cookie := flag.String("cookie", "./cookie.text", "保存cookie的文件，类型为text")
 	mid := flag.Int("mid", 0, "up主mid，爬取该up主若干视频评论")
 	pages := flag.Int("pages", 3, "获取的页数,仅当指定mid时有效")
 	skip := flag.Int("skip", 0, "跳过视频的页数，仅当指定mid时有效")
