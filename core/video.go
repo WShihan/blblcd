@@ -11,60 +11,43 @@ import (
 	"strings"
 )
 
-var (
-	UserAgent string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0"
-	Origin    string = "https://www.bilibili.com"
-	Host      string = "https://www.bilibili.com"
-)
-
-func FetchComment(oid string, next int, order int, cookie string) (data model.CommentResponse, err error) {
+func FetchVideoList(mid int, page int, order string, cookie string) (videoList model.VideoListResponse, err error) {
 	defer func() {
 		if err := recover(); err != nil {
-			slog.Error(fmt.Sprintf("爬取评论失败,oid:%s，第%d页失败", oid, next))
+			slog.Error(fmt.Sprintf("爬取up主视频列表失败,mid:%d", mid))
 			slog.Error(fmt.Sprint(err))
 		}
 	}()
-	client := http.Client{}
-	payload := strings.NewReader("")
-
+	api := "https://api.bilibili.com/x/space/wbi/arc/search?"
 	params := url.Values{}
-	params.Set("oid", oid)
-	params.Set("type", "1")
-	params.Set("sort", fmt.Sprint(order))
-	params.Set("nohot", "1")
-	params.Set("ps", "20")
-	params.Set("pn", fmt.Sprint(next))
+	params.Set("mid", fmt.Sprint(mid))
+	params.Set("order", order)
+	params.Set("platform", "web")
+	params.Set("pn", fmt.Sprint(page))
+	params.Set("ps", "30")
+	params.Set("tid", "0")
 
-	url := "https://api.bilibili.com/x/v2/reply?" + params.Encode()
-	newUrl, err := SignAndGenerateURL(url, cookie)
-	if err != nil {
-		slog.Error(err.Error())
-	}
+	client := http.Client{}
+	crypedApi, _ := SignAndGenerateURL(api+params.Encode(), cookie)
 
-	req, err := http.NewRequest("GET", newUrl, payload)
-	if err != nil {
-		slog.Error("Erro:" + err.Error())
-		return
-	}
-	req.Header.Add("User-agent", UserAgent)
-	req.Header.Add("Origin", Origin)
+	req, _ := http.NewRequest("GET", crypedApi, strings.NewReader(""))
+
+	req.Header.Add("Origin", "https://space.bilibili.com")
 	req.Header.Add("Host", Host)
-	req.Header.Add("Referer", "https://www.bilibili.com/video/BV12u411g7go/?spm_id_from=333.788.top_right_bar_window_history.content.click&vd_source=10d0f86227f3c318f8237345caac47c8")
-	req.Header.Add("Sec-Fetch-Dest", "empty")
-	req.Header.Add("Sec-Fetch-Mode", "cors")
-	req.Header.Add("Sec-Fetch-Site", "same-site")
+	req.Header.Add("Referer", Origin)
+	req.Header.Add("User-agent", UserAgent)
 	req.Header.Add("Cookie", cookie)
 
-	res, err := client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
-		slog.Error("Erro:" + err.Error())
+		slog.Error("parse json error:" + err.Error())
 	}
-	body := res.Body
-	defer body.Close()
-	dataStr, _ := io.ReadAll(res.Body)
-	// fmt.Println(string(dataStr))
-	json.Unmarshal(dataStr, &data)
-	slog.Info(fmt.Sprintf("完成评论获取，oid: %s, 第%d页", oid, next))
+	defer resp.Body.Close()
+
+	jsonByte, _ := io.ReadAll(resp.Body)
+	slog.Info(resp.Status)
+	json.Unmarshal(jsonByte, &videoList)
+	slog.Info(fmt.Sprintf("爬取up主视频列表成功,mid:%d，第%d页", mid, page))
 	return
 
 }
