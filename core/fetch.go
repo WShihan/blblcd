@@ -43,8 +43,14 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 		if len(cmtInfo.Data.Replies) != 0 && len(replyCollection) < total {
 			replyCollection = append(replyCollection, cmtInfo.Data.Replies...)
 			for _, k := range cmtInfo.Data.Replies {
-				if len(k.Replies) > 0 {
+				if k.Rcount == 0 {
+					continue
+				}
+				if len(k.Replies) > 0 && len(k.Replies) == k.Rcount {
 					replyCollection = append(replyCollection, k.Replies...)
+				} else {
+					subCmts := FindSubComment(k, opt)
+					replyCollection = append(replyCollection, subCmts...)
 				}
 			}
 			if len(cmtInfo.Data.TopReplies) != 0 {
@@ -56,6 +62,7 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 				}
 			}
 		}
+
 		if len(replyCollection) == 0 {
 			slog.Info(fmt.Sprintf("-----视频%s，第%d页未获取到评论，停止爬取-----", oid, round))
 			break
@@ -98,6 +105,44 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 		store.WriteGeoJSON(statMap, opt.Bvid, opt.Output)
 
 	}
+}
+func FindSubComment(cmt model.ReplyItem, opt *model.Option) []model.ReplyItem {
+	oid := strconv.Itoa(cmt.Oid)
+	round := 1
+	replyCollection := []model.ReplyItem{}
+	for {
+		// 停顿
+		delay := (rand.Float32() + 1) * 1e9
+		time.Sleep(time.Duration(delay))
+		slog.Info(fmt.Sprintf("爬取视频子评论%s", oid))
+		cmtInfo, _ := FetchSubComment(oid, cmt.Rpid, round, opt.Cookie)
+		round++
+		if cmtInfo.Code != 0 {
+			slog.Error(fmt.Sprintf("请求子评论失败，视频%s，第%d页失败", oid, round))
+			slog.Error(cmtInfo.Message)
+			break
+		}
+		if len(cmtInfo.Data.Replies) > 0 {
+			replyCollection = append(replyCollection, cmtInfo.Data.Replies...)
+			for _, k := range cmtInfo.Data.Replies {
+				if len(k.Replies) > 0 {
+					replyCollection = append(replyCollection, k.Replies...)
+				}
+			}
+			if len(cmtInfo.Data.TopReplies) != 0 {
+				replyCollection = append(replyCollection, cmtInfo.Data.TopReplies...)
+				for _, k := range cmtInfo.Data.TopReplies {
+					if len(k.Replies) > 0 {
+						replyCollection = append(replyCollection, k.Replies...)
+					}
+				}
+			}
+		} else {
+			slog.Info(fmt.Sprintf("******视频%s，第%d页未获取到子评论，停止爬取******", oid, round))
+			break
+		}
+	}
+	return replyCollection
 
 }
 
