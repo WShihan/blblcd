@@ -81,7 +81,7 @@ func Save2CSV(filename string, cmts []model.Comment, output string) {
 
 		writer := csv.NewWriter(file)
 		defer writer.Flush()
-		headers := "bvid,upname,sex,content,pictrues,rpid,oid,mid,parent,fans_grade,ctime,like,following,level,location"
+		headers := "bvid,upname,sex,content,pictures,rpid,oid,mid,parent,fans_grade,ctime,like,following,level,location"
 		headerErr := writer.Write(strings.Split(headers, ","))
 		if headerErr != nil {
 			slog.Error(fmt.Sprintf("写入csv文件字段错误，oid:%d", cmts[0].Oid))
