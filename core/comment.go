@@ -24,7 +24,6 @@ func FetchComment(oid string, next int, order int, cookie string) (data model.Co
 			slog.Error(fmt.Sprint(err))
 		}
 	}()
-	slog.Info(cookie)
 	client := http.Client{}
 	payload := strings.NewReader("")
 
