@@ -3,16 +3,30 @@ Blblcd
 
 Blblcd（Bilibili-comment-dowloader）——基于[bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)的Bilibili视频评论下载工具。
 
-* 下载单个视频评论，可按热评/时间顺序
-* 按投稿时间/收藏/播放顺序下载某up主投稿的多个视频评论
+
+
+特点如下：
+
+* 使用方便，工具主体仅包含一个可执行文件，无需额外安装其他依赖。
+* 下载单个视频评论，可按热评/时间顺序。
+* 下载多个视频评论，可按投稿时间/收藏/播放顺序下载某up主投稿的多个视频评论。
+* 下载子评论，可下载隐藏评论和“楼中楼”评论。
+* 下载评论中的图片，可将图片下载到本地同时将链接写入csv。
+* 支持评论统计输出为地图。
 
 
 
-🔔 这是一个命令行程序，没有图形化界面。
+🔔 请留意
+
+* 这是一个命令行程序，没有图形化界面。
+* 子评论自动爬取，同时控制台会输出相应的页码，非陷入死循环。
+* 如果爬取结果数量不对，只有十几条评论，那么很大概率是cookie失效了。
+* 爬取保存的csv文件格式为utf-8，使用诸如Microsoft Office之类的办公软件打开会显示乱码，建议用记事本或者代码编辑器打开。
+* 目前以维护已有功能为主，该工具基本符合本人需求，暂不接受新增功能开发请求。
 
 
 
-下载评论信息如下：
+爬取评论信息如下：
 
 ```
 	Uname         名称
@@ -41,8 +55,6 @@ Blblcd（Bilibili-comment-dowloader）——基于[bilibili-API-collect](https:/
 
 
 ![image-20240816044237687](https://md-1301600412.cos.ap-nanjing.myqcloud.com/pic/typora/image-20240816044237687.png)
-
-
 
 
 使用
@@ -179,6 +191,13 @@ blblcd -mid 123344555  -goroutines 10
 ```bash
 blblcd -bvid BV1VJ4m1jk34K --geojson true
 ```
+
+
+
+
+
+[![start_history](https://api.star-history.com/svg?repos=WShihan/blblcd&type=Date)](https://star-history.com/#WShihan/blblcd&Date)
+
 
 
 
