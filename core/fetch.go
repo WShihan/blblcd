@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"math/rand"
+	"path"
 	"strconv"
 	"strings"
 	"sync"
@@ -24,11 +25,13 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 
 	oid := strconv.Itoa(avid)
 	total, err := FetchCount(oid)
+	downloadedCount := 0
 	if err != nil {
 		slog.Error(err.Error())
 		return
 	}
-	round := 1
+	savePath := path.Join(opt.Output, opt.Bvid)
+	round := 0
 	recordedMap := make(map[int64]bool)
 	statMap := map[string]model.Stat{}
 	offsetStr := ""
@@ -38,8 +41,13 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 		delay := (rand.Float32() + 1) * 1e9
 		time.Sleep(time.Duration(delay))
 		slog.Info(fmt.Sprintf("爬取视频评论%s", oid))
-		cmtInfo, _ := FetchComment(oid, round, opt.Corder, opt.Cookie, offsetStr)
+		if downloadedCount >= total {
+			slog.Info(fmt.Sprintf("*****爬取视频：%s评论完成*****", oid))
+			break
+		}
 		round++
+		cmtInfo, _ := FetchComment(oid, round, opt.Corder, opt.Cookie, offsetStr)
+
 		if cmtInfo.Code != 0 {
 			slog.Error(fmt.Sprintf("请求评论失败，视频%s，第%d页失败", oid, round))
 			slog.Error(cmtInfo.Message)
@@ -105,10 +113,13 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 			}
 
 		}
-		go store.Save2CSV(opt.Bvid, cmtCollection, opt.Output)
+
+		downloadedCount += len(cmtCollection)
+		slog.Info(fmt.Sprintf("视频%s，已爬取%d条评论，预计剩余%d条", oid, downloadedCount, total-downloadedCount))
+		go store.Save2CSV(opt.Bvid, cmtCollection, savePath)
 	}
 	if opt.Mapping {
-		store.WriteGeoJSON(statMap, opt.Bvid, opt.Output)
+		store.WriteGeoJSON(statMap, opt.Bvid, savePath)
 
 	}
 }

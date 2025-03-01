@@ -48,13 +48,20 @@ func FetchComment(oid string, next int, order int, cookie string, offsetStr stri
 		}
 	}()
 	client := resty.New()
+	var fmtOffsetStr string
+	if offsetStr == "" {
+		fmtOffsetStr = `{"offset":""}`
+	} else {
+		fmtOffsetStr = fmt.Sprintf(`{"offset":%q}`, offsetStr)
+	}
+
 	params := url.Values{}
 	params.Set("oid", oid)
 	params.Set("type", "1")
 	params.Set("mode", "3")
 	params.Set("plat", "1")
 	params.Set("web_location", "1315875")
-	params.Set("pagination_str", offsetStr)
+	params.Set("pagination_str", fmtOffsetStr)
 
 	url := "https://api.bilibili.com/x/v2/reply/wbi/main?" + params.Encode()
 	newUrl, err := SignAndGenerateURL(url, cookie)

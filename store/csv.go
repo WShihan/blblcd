@@ -39,7 +39,7 @@ func Save2CSV(filename string, cmts []model.Comment, output string) {
 			slog.Error("写入CSV错误:", err)
 		}
 	}()
-
+	utils.PresetPath(output)
 	if len(cmts) == 0 {
 		return
 	}

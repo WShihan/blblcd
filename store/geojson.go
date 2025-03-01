@@ -25,7 +25,7 @@ func WriteGeoJSON(statMap map[string]model.Stat, filename string, output string)
 		slog.Error("读取文件错误" + err.Error())
 		return
 	}
-
+	utils.PresetPath(output)
 	// 解析GeoJSON数据
 	fc := geojson.NewFeatureCollection()
 	err = json.Unmarshal(data, &fc)

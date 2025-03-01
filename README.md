@@ -1,18 +1,19 @@
-Blblcd
+blblcd
 ====
 
-Blblcd（Bilibili-comment-dowloader）——基于[bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)的Bilibili视频评论下载工具。
+blblcd（Bilibili-comment-dowloader），一款基于[bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)的Bilibili视频评论下载工具。
 
 
 
-特点如下：
+特点：
 
 * 使用方便，工具主体仅包含一个可执行文件，无需额外安装其他依赖。
-* 下载单个视频评论，可按热评/时间顺序。
-* 下载多个视频评论，可按投稿时间/收藏/播放顺序下载某up主投稿的多个视频评论。
+* 下载单个/多个视频评论，可按热评/时间顺序。
+* 下载指定UP主视频的评论，可按投稿时间/收藏/播放顺序下载某up主投稿的多个视频评论。
 * 下载子评论，可下载隐藏评论和“楼中楼”评论。
 * 下载评论中的图片，可将图片下载到本地同时将链接写入csv。
-* 支持评论统计输出为地图。
+* 支持评论统计输出为地图展示。
+* 支持MacOS，Linux， Windows
 
 
 
@@ -20,9 +21,10 @@ Blblcd（Bilibili-comment-dowloader）——基于[bilibili-API-collect](https:/
 
 * 这是一个命令行程序，没有图形化界面。
 * 子评论自动爬取，同时控制台会输出相应的页码，非陷入死循环。
-* 如果爬取结果数量不对，只有十几条评论，那么很大概率是cookie失效了。
-* 爬取保存的csv文件格式为utf-8，使用诸如Microsoft Office之类的办公软件打开会显示乱码，建议用记事本或者代码编辑器打开。
-* 目前以维护已有功能为主，该工具基本符合本人需求，暂不接受新增功能开发请求。
+* 如果爬取结果数量不对只有十几条评论和网页上看到的数量不一致，那么很大概率是cookie失效了。
+* 爬取保存的csv文件编码格式为utf-8，使用诸如Microsoft Office之类的办公软件打开会显示乱码，建议用记事本或者代码编辑器打开(如果想要使用上述软件打开，需要将编码转为GBK或GB2312)。
+* 为不触发反爬，程序人为降低了请求频率，所以爬取速度比较慢。
+* 目前以维护已有功能为主，该工具基本符合本人需求，暂不接受新增功能开发请求。当然如果你发现已有功能出现bug，欢迎提交issue，我将尽力去解决。
 
 
 
@@ -50,7 +52,7 @@ Blblcd（Bilibili-comment-dowloader）——基于[bilibili-API-collect](https:/
 效果
 ===
 
-![image-20240816044423882](https://md-1301600412.cos.ap-nanjing.myqcloud.com/pic/typora/image-20240816044423882.png)
+![mapping](./example/mapping.png)
 
 
 
@@ -64,15 +66,15 @@ Blblcd（Bilibili-comment-dowloader）——基于[bilibili-API-collect](https:/
 
 * cookie ：必须
 * mid ：up主代码，当查找up视频时必须
-* bvid：稿件视频id，下载单个视频评论时必须
+* bvid：稿件视频id，单独下载单个/多个视频评论时必须
 
 
 
 #### 获取cookie
 
-登录[哔哩哔哩 ](https://www.bilibili.com/)，按住`F12`进入开发者工具页面，选择`网络`，点击其中任意一条请求，查看请求头，将cookie值复制后，在本地保存为text文件（最好是与blblcd放置于同一个目录下，命名为cookie.text）。
+登录[哔哩哔哩 ](https://www.bilibili.com/)，按住`F12`进入开发者工具页面，选择`网络`，点击其中任意一条请求，（最好是XHR或Fetch类型的请求）查看请求头，将cookie值复制后，在本地保存为text文件（最好是与blblcd放置于同一个目录下，命名为cookie.text）。
 
-![image-20240603170934244](https://md-1301600412.cos.ap-nanjing.myqcloud.com/pic/typora/image-20240603170934244.png)
+![cookie](./example/cookie.png)
 
 
 
@@ -82,7 +84,7 @@ Blblcd（Bilibili-comment-dowloader）——基于[bilibili-API-collect](https:/
 
 进入up主页，浏览器地址栏上将会显示mid，复制它，例如下面链接里的mid为`112233445`。
 
-![image-20240605170502785](https://md-1301600412.cos.ap-nanjing.myqcloud.com/pic/typora/image-20240605170502785.png)
+![mid](./example/mid.png)
 
 #### 获取视频bvid
 
@@ -99,37 +101,43 @@ Blblcd（Bilibili-comment-dowloader）——基于[bilibili-API-collect](https:/
 在终端输入-help查看所有指令
 
 ```bash
-./blblcd -help
+./blblcd -h
 ```
 
-![image-20240816044809014](https://md-1301600412.cos.ap-nanjing.myqcloud.com/pic/typora/image-20240816044809014.png)
+![命令参数](./example/index.png)
 
 ### 示例
 
-#### 单一视频
+#### 单个/多个视频
 
 基础
 
 ```bash
-blblcd -bvid BV1VJ4m1jk34K
+blblcd video BV1VJ4m1jk34K
+```
+
+多个视频
+
+```bash
+blblcd video BV1VJ4m1jk34K  BV1sdfVJ4m1jksdf
 ```
 
 指定评论按`回复`顺序
 
 ```bash
-blblcd -bvid BV1VJ4m1jk34K -corder 2
+blblcd video BV1VJ4m1jk34K -corder 2
 ```
 
 指定`cookie`文件
 
 ```bash
-blblcd -cookie /path/to/cookiefile.text -bvid BV1VJ4m1jk34K -corder 2
+blblcd video BV1VJ4m1jk34K -cookie /path/to/cookiefile.text  -corder 2
 ```
 
 输出位置
 
 ```bash
-blblcd -bvid BV1VJ4m1jk34K -corder 2 -output path/to/output
+blblcd video BV1VJ4m1jk34K -corder 2 -output path/to/output
 ```
 
 
@@ -139,31 +147,31 @@ blblcd -bvid BV1VJ4m1jk34K -corder 2 -output path/to/output
 基础（默认获取前三页，一页30条视频）
 
 ```bash
-blblcd -mid 123344555
+blblcd up 123344555
 ```
 
 指定`cookie`
 
 ```bash
-blblcd -mid 123344555 -cookie /path/to/cookiefile.text
+blblcd up 123344555 -cookie /path/to/cookiefile.text
 ```
 
 视频列表顺序，按`最多收藏`
 
 ```bash
-blblcd -mid 123344555 -skip 3 -pages 5 -vorder stow
+blblcd up 123344555 -skip 3 -pages 5 -vorder stow
 ```
 
 固定页数
 
 ```bash
-blblcd -mid 123344555 -pages 5
+blblcd up 123344555 -pages 5
 ```
 
 忽略页数，跳过前三页后获取5页，即4-8页
 
 ```bash
-blblcd -mid 123344555 -skip 3 -pages 5
+blblcd up 123344555 -skip 3 -pages 5
 ```
 
 
@@ -171,7 +179,7 @@ blblcd -mid 123344555 -skip 3 -pages 5
 输出位置
 
 ```bash
-blblcd -mid 123344555  -output output/path
+blblcd up 123344555  -output output/path
 ```
 
 
@@ -179,7 +187,7 @@ blblcd -mid 123344555  -output output/path
 并发数量
 
 ```bash
-blblcd -mid 123344555  -goroutines 10
+blblcd up 123344555  -workers 10
 ```
 
 
@@ -189,7 +197,7 @@ blblcd -mid 123344555  -goroutines 10
 需要在程序所在位置添加`geo-template.geojson`，该资源已包含在release里。
 
 ```bash
-blblcd -bvid BV1VJ4m1jk34K --geojson true
+blblcd video BV1VJ4m1jk34K --mapping 
 ```
 
 
