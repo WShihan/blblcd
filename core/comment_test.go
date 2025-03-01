@@ -21,9 +21,13 @@ func init() {
 
 func TestFetchCmt(t *testing.T) {
 	oid := Bvid2Avid("BV1XU1eYTEW4")
-	t.Log(FetchComment(fmt.Sprintf("%d", oid), 0, 2, Cookie))
+	t.Log(FetchComment(fmt.Sprintf("%d", oid), 0, 2, Cookie, ""))
 }
 func TestFetchSubCmt(t *testing.T) {
 	oid := Bvid2Avid("BV1XU1eYTEW4")
 	t.Log(FetchSubComment(fmt.Sprintf("%d", oid), 243795113873, 13, Cookie))
+}
+func TestFetchSubCmtCount(t *testing.T) {
+	oid := Bvid2Avid("BV1XU1eYTEW4")
+	t.Log(FetchCount(fmt.Sprintf("%d", oid)))
 }

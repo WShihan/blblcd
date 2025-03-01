@@ -23,24 +23,30 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 	}()
 
 	oid := strconv.Itoa(avid)
+	total, err := FetchCount(oid)
+	if err != nil {
+		slog.Error(err.Error())
+		return
+	}
 	round := 1
 	recordedMap := make(map[int64]bool)
 	statMap := map[string]model.Stat{}
+	offsetStr := ""
 	for {
 		replyCollection := []model.ReplyItem{}
 		// 停顿
 		delay := (rand.Float32() + 1) * 1e9
 		time.Sleep(time.Duration(delay))
 		slog.Info(fmt.Sprintf("爬取视频评论%s", oid))
-		cmtInfo, _ := FetchComment(oid, round, opt.Corder, opt.Cookie)
+		cmtInfo, _ := FetchComment(oid, round, opt.Corder, opt.Cookie, offsetStr)
 		round++
 		if cmtInfo.Code != 0 {
 			slog.Error(fmt.Sprintf("请求评论失败，视频%s，第%d页失败", oid, round))
 			slog.Error(cmtInfo.Message)
 			break
 		}
-		total := cmtInfo.Data.Page.Acount
 		if len(cmtInfo.Data.Replies) != 0 && len(replyCollection) < total {
+			offsetStr = cmtInfo.Data.Cursor.PaginationReply.NextOffset
 			replyCollection = append(replyCollection, cmtInfo.Data.Replies...)
 			for _, k := range cmtInfo.Data.Replies {
 				if k.Rcount == 0 {
@@ -74,7 +80,7 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 				cmt := NewCMT(&k)
 				recordedMap[cmt.Rpid] = true
 				cmtCollection = append(cmtCollection, cmt)
-				if opt.Geojson {
+				if opt.Mapping {
 					if value, exist := statMap[cmt.Location]; exist {
 						value.Location += 1
 						value.Sex[cmt.Sex] += 1
@@ -101,11 +107,12 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 		}
 		go store.Save2CSV(opt.Bvid, cmtCollection, opt.Output)
 	}
-	if opt.Geojson {
+	if opt.Mapping {
 		store.WriteGeoJSON(statMap, opt.Bvid, opt.Output)
 
 	}
 }
+
 func FindSubComment(cmt model.ReplyItem, opt *model.Option) []model.ReplyItem {
 	oid := strconv.Itoa(cmt.Oid)
 	round := 1

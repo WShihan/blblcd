@@ -1,5 +1,29 @@
 package model
 
+type CommentsCountResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	TTL     int    `json:"ttl"`
+	Data    struct {
+		Count int `json:"count"`
+	} `json:"data"`
+}
+
+type Cursor struct {
+	IsBegin         bool `json:"is_begin"`
+	Prev            int  `json:"prev"`
+	Next            int  `json:"next"`
+	IsEnd           bool `json:"is_end"`
+	PaginationReply struct {
+		NextOffset string `json:"next_offset"`
+	} `json:"pagination_reply"`
+	SessionID   string `json:"session_id"`
+	Mode        int    `json:"mode"`
+	ModeText    string `json:"mode_text"`
+	AllCount    int    `json:"all_count"`
+	SupportMode []int  `json:"support_mode"`
+	Name        string `json:"name"`
+}
 type Comment struct {
 	Uname         string    //姓名
 	Sex           string    //性别
@@ -104,7 +128,8 @@ type CommentResponse struct {
 	Message string `json:"message"`
 	TTL     int    `json:"ttl"`
 	Data    struct {
-		Page struct {
+		Cursor Cursor `json:"cursor"`
+		Page   struct {
 			Num    int `json:"num"`
 			Size   int `json:"size"`
 			Count  int `json:"count"`

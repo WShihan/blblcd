@@ -9,5 +9,5 @@ type Option struct {
 	Bvid    string
 	Corder  int
 	Output  string
-	Geojson bool
+	Mapping bool
 }
