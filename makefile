@@ -1,6 +1,6 @@
 BINARY_NAME = blblcd
 BUILD_DIR = build
-VERSION = 0.1.0
+VERSION = 0.1.1
 OPTIONS = CGO_ENABLED=0
 COMMIT = $(shell git rev-parse HEAD)
 BUILD_TIME = $(shell date +%Y-%m-%dT%H:%M:%S)

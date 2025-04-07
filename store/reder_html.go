@@ -14,11 +14,11 @@ type Data struct {
 	China template.HTML
 }
 
-func RenderHTML(geofile string, output string) (ok bool, err error) {
+func RenderHTML(title string, geofile string, output string) (ok bool, err error) {
 	geojson, err := os.ReadFile(geofile)
 
 	HtmlData := Data{
-		Title: "评论地区分布",
+		Title: title,
 		Name:  "John",
 		China: template.HTML(string(geojson)),
 	}

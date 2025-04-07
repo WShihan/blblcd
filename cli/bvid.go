@@ -33,7 +33,7 @@ var videoCmd = &cobra.Command{
 			opt := model.Option{
 				Bvid:    bvid,
 				Corder:  corder,
-				Mapping: false,
+				Mapping: mapping,
 				Cookie:  cookie,
 				Output:  output,
 			}

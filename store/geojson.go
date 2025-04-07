@@ -65,5 +65,5 @@ func WriteGeoJSON(statMap map[string]model.Stat, filename string, output string)
 		return
 	}
 	slog.Info(fmt.Sprintf("-----写入geojson：%s成功-----", geojsonOutput))
-	RenderHTML(filepath.Join(output, filename+".geojson"), filepath.Join(output, filename+".html"))
+	RenderHTML(filename, filepath.Join(output, filename+".geojson"), filepath.Join(output, filename+".html"))
 }

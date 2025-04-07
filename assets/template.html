@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>{{ .Title }} 评论分布</title>
+    <title>{{ .Title }} 评论地区分布</title>
     <script src="https://cdn.jsdelivr.net/npm/openlayers@4.6.5/dist/ol.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/openlayers@4.6.5/dist/ol.min.css" />
@@ -32,18 +32,31 @@
       }
       .popup .content {
         font-size: 14px;
-        line-height: .5rem;
+        line-height: 0.5rem;
         color: rgb(89, 86, 86);
+      }
+      #tip {
+        position: fixed;
+        bottom: 2em;
+        left: 1em;
       }
     </style>
   </head>
   <body>
     <div id="map" style="width: 100%; height: 95vh"></div>
     <div id="popup" class="popup"></div>
+    <div id="tip">
+      <span>
+        本页面由
+        <a target="_blank" href="https://github.com/WShihan/blblcd">blblcd</a>
+        生成，地图来源
+        <a href="https://www.amap.com/" target="_blank" rel="noopener noreferrer">©高德地图</a>
+      </span>
+    </div>
     <script type="text/javascript">
       // 定义色带函数
       function getColor(value) {
-        if(value === 0){
+        if (value === 0) {
           return 'rgb(100, 100, 100)';
         }
         return `rgb(255, ${255 - value * 5}, ${255 - value * 5})`;
@@ -131,33 +144,33 @@
           const level5 = feature.get('level5');
           const level6 = feature.get('level6');
           const stat = {
-            "地区": name,
-            "评论数量": count,
-            "点赞数量": like,
-            "性别数量": {
-              "男": male,
-              "女": female,
-              "保密": sexless,
+            地区: name,
+            评论数量: count,
+            点赞数量: like,
+            性别数量: {
+              男: male,
+              女: female,
+              保密: sexless,
             },
-            "等级": {
-              "等级1": level0,
-              "等级2": level1,
-              "等级3": level2,
-              "等级4": level3,
-              "等级5": level4,
-              "等级6": level5,
-              "等级7": level6,
-            }
-          }
-          let info = ''
-          for(let key in stat){
+            等级: {
+              等级1: level0,
+              等级2: level1,
+              等级3: level2,
+              等级4: level3,
+              等级5: level4,
+              等级6: level5,
+              等级7: level6,
+            },
+          };
+          let info = '';
+          for (let key in stat) {
             if (typeof stat[key] === 'object') {
-              info += `<p><strong>${key}</strong></p>`
-              for(let k in stat[key]){
-                info += `<p>${k}: ${stat[key][k]}</p>`
+              info += `<p><strong>${key}</strong></p>`;
+              for (let k in stat[key]) {
+                info += `<p>${k}: ${stat[key][k]}</p>`;
               }
-            } else{
-              info += `<p>${key}: ${stat[key]}</p>`
+            } else {
+              info += `<p>${key}: ${stat[key]}</p>`;
             }
           }
 
