@@ -116,7 +116,7 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 
 		downloadedCount += len(cmtCollection)
 		slog.Info(fmt.Sprintf("视频%s，已爬取%d条评论，预计剩余%d条", oid, downloadedCount, total-downloadedCount))
-		go store.Save2CSV(opt.Bvid, cmtCollection, savePath)
+		go store.Save2CSV(opt.Bvid, cmtCollection, savePath, opt.ImgDownload)
 	}
 	if opt.Mapping {
 		store.WriteGeoJSON(statMap, opt.Bvid, savePath)

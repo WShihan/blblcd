@@ -31,11 +31,12 @@ var videoCmd = &cobra.Command{
 		for i := range args {
 			bvid := args[i]
 			opt := model.Option{
-				Bvid:    bvid,
-				Corder:  corder,
-				Mapping: mapping,
-				Cookie:  cookie,
-				Output:  output,
+				Bvid:        bvid,
+				Corder:      corder,
+				Mapping:     mapping,
+				Cookie:      cookie,
+				Output:      output,
+				ImgDownload: imgDownload,
 			}
 			sem := make(chan struct{}, workers)
 			wg := sync.WaitGroup{}

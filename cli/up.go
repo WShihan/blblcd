@@ -46,15 +46,16 @@ var upCmd = &cobra.Command{
 		}
 
 		opt := model.Option{
-			Mid:     int(mid),
-			Pages:   pages,
-			Skip:    skip,
-			Vorder:  vorder,
-			Bvid:    "",
-			Corder:  corder,
-			Mapping: mapping,
-			Cookie:  cookie,
-			Output:  output,
+			Mid:         int(mid),
+			Pages:       pages,
+			Skip:        skip,
+			Vorder:      vorder,
+			Bvid:        "",
+			Corder:      corder,
+			Mapping:     mapping,
+			Cookie:      cookie,
+			Output:      output,
+			ImgDownload: imgDownload,
 		}
 		sem := make(chan struct{}, workers)
 		core.FindUser(sem, &opt)

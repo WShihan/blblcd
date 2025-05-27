@@ -33,7 +33,7 @@ func CMT2Record(cmt model.Comment) (record []string) {
 	}
 }
 
-func Save2CSV(filename string, cmts []model.Comment, output string) {
+func Save2CSV(filename string, cmts []model.Comment, output string, downloadIMG bool) {
 	defer func() {
 		if err := recover(); err != nil {
 			slog.Error("写入CSV错误:", err)
@@ -59,9 +59,12 @@ func Save2CSV(filename string, cmts []model.Comment, output string) {
 			if cmt.Uname == "" {
 				continue
 			}
-			if len(cmt.Pictures) != 0 {
-				go WriteImage(cmt.Uname, cmt.Pictures, output+"/"+"images")
+			if downloadIMG {
+				if len(cmt.Pictures) != 0 {
+					go WriteImage(cmt.Uname, cmt.Pictures, output+"/"+"images")
+				}
 			}
+
 			record := CMT2Record(cmt)
 			err = writer.Write(record)
 			if err != nil {
@@ -92,9 +95,12 @@ func Save2CSV(filename string, cmts []model.Comment, output string) {
 			if cmt.Uname == "" {
 				continue
 			}
-			if len(cmt.Pictures) != 0 {
-				go WriteImage(cmt.Uname, cmt.Pictures, output+"/"+"images")
+			if downloadIMG {
+				if len(cmt.Pictures) != 0 {
+					go WriteImage(cmt.Uname, cmt.Pictures, output+"/"+"images")
+				}
 			}
+
 			record := CMT2Record(cmt)
 			err := writer.Write(record)
 			if err != nil {
