@@ -34,6 +34,7 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 	round := 0
 	recordedMap := make(map[int64]bool)
 	statMap := map[string]model.Stat{}
+	maxTryCount := 0 // 当接口返回空数据后重试次数
 	offsetStr := ""
 	for {
 		replyCollection := []model.ReplyItem{}
@@ -83,8 +84,10 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 		}
 
 		var cmtCollection = []model.Comment{}
+		isEmpty := true
 		for _, k := range replyCollection[:] {
 			if _, ok := recordedMap[k.Rpid]; !ok {
+				isEmpty = false
 				cmt := NewCMT(&k)
 				recordedMap[cmt.Rpid] = true
 				cmtCollection = append(cmtCollection, cmt)
@@ -114,6 +117,14 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 
 		}
 
+		if isEmpty {
+			maxTryCount++
+			if maxTryCount >= opt.MaxTryCount {
+				slog.Info(fmt.Sprintf("请求返回空数据%d次，超过限度将停止爬取", opt.MaxTryCount))
+				break
+			}
+		}
+
 		downloadedCount += len(cmtCollection)
 		slog.Info(fmt.Sprintf("视频%s，已爬取%d条评论，预计剩余%d条", oid, downloadedCount, total-downloadedCount))
 		go store.Save2CSV(opt.Bvid, cmtCollection, savePath, opt.ImgDownload)
@@ -132,11 +143,11 @@ func FindSubComment(cmt model.ReplyItem, opt *model.Option) []model.ReplyItem {
 		// 停顿
 		delay := (rand.Float32() + 1) * 1e9
 		time.Sleep(time.Duration(delay))
-		slog.Info(fmt.Sprintf("爬取视频子评论%s", oid))
+		slog.Info(fmt.Sprintf("爬取%d的子评论", cmt.Rpid))
 		cmtInfo, _ := FetchSubComment(oid, cmt.Rpid, round, opt.Cookie)
 		round++
 		if cmtInfo.Code != 0 {
-			slog.Error(fmt.Sprintf("请求子评论失败，视频%s，第%d页失败", oid, round))
+			slog.Error(fmt.Sprintf("请求子评论失败，父评论%d，第%d页失败", cmt.Rpid, round))
 			slog.Error(cmtInfo.Message)
 			break
 		}
@@ -156,7 +167,7 @@ func FindSubComment(cmt model.ReplyItem, opt *model.Option) []model.ReplyItem {
 				}
 			}
 		} else {
-			slog.Info(fmt.Sprintf("******视频%s，第%d页未获取到子评论，停止爬取******", oid, round))
+			slog.Info(fmt.Sprintf("******视频%s，评论%d，第%d页未获取到子评论，停止爬取******", oid, cmt.Rpid, round))
 			break
 		}
 	}

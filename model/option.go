@@ -11,4 +11,5 @@ type Option struct {
 	Output      string
 	Mapping     bool
 	ImgDownload bool
+	MaxTryCount int
 }

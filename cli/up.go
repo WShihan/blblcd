@@ -19,7 +19,7 @@ var (
 func init() {
 	upCmd.Flags().IntVarP(&pages, "pages", "p", 3, "获取的页数")
 	upCmd.Flags().IntVarP(&skip, "skip", "s", 0, "跳过视频的页数")
-	upCmd.Flags().StringVarP(&vorder, "corder", "t", "pubdate", "爬取up主视频列表时排序方式，最新发布：pubdate最多播放：click最多收藏：stow")
+	upCmd.Flags().StringVarP(&vorder, "vorder", "t", "pubdate", "爬取up主视频列表时排序方式，最新发布：pubdate最多播放：click最多收藏：stow")
 
 	rootCmd.AddCommand(upCmd)
 }
@@ -56,6 +56,7 @@ var upCmd = &cobra.Command{
 			Cookie:      cookie,
 			Output:      output,
 			ImgDownload: imgDownload,
+			MaxTryCount: maxTryCount,
 		}
 		sem := make(chan struct{}, workers)
 		core.FindUser(sem, &opt)

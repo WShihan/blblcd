@@ -37,11 +37,13 @@ var videoCmd = &cobra.Command{
 				Cookie:      cookie,
 				Output:      output,
 				ImgDownload: imgDownload,
+				MaxTryCount: maxTryCount,
 			}
+			fmt.Printf("bvid" + bvid + "\n")
 			sem := make(chan struct{}, workers)
 			wg := sync.WaitGroup{}
 			wg.Add(1)
-			go core.FindComment(sem, &wg, int(core.Bvid2Avid(fmt.Sprint(opt.Bvid))), &opt)
+			go core.FindComment(sem, &wg, int(core.Bvid2Avid(bvid)), &opt)
 			wg.Wait()
 		}
 

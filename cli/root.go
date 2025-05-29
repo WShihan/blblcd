@@ -15,6 +15,7 @@ var (
 	workers     int
 	corder      int
 	imgDownload bool
+	maxTryCount int
 )
 
 var rootCmd = &cobra.Command{
@@ -31,7 +32,8 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&mapping, "mapping", "m", false, "是否统计输出地图")
 	rootCmd.PersistentFlags().BoolVarP(&imgDownload, "img-download", "i", false, "是否下载评论中的图片")
 	rootCmd.PersistentFlags().IntVarP(&workers, "workers", "w", 5, "最多协程数量")
-	rootCmd.PersistentFlags().IntVarP(&workers, "corder", "v", 1, "爬取时评论排序方式，0：按时间，1：按点赞数，2：按回复数")
+	rootCmd.PersistentFlags().IntVarP(&maxTryCount, "max-try-count", "t", 3, "当爬取结果为空时请求最大尝试次数")
+	rootCmd.PersistentFlags().IntVarP(&corder, "corder", "v", 1, "爬取时评论排序方式，0：按时间，1：按点赞数，2：按回复数")
 }
 
 func Execute(injection *Injection) {

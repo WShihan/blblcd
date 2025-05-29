@@ -4,7 +4,12 @@ import (
 	"testing"
 )
 
-func TestString2Markdown(t *testing.T) {
-	res := Avid2Bvid(413374333)
+func TestAvid2Bvid(t *testing.T) {
+	res := Avid2Bvid(113976755094913)
+	t.Log(res)
+}
+
+func TestBvid2Avid(t *testing.T) {
+	res := Bvid2Avid("BV1e7NRemEwv")
 	t.Log(res)
 }
