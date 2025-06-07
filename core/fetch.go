@@ -22,7 +22,12 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 		wg.Done()
 		<-sem
 	}()
-
+	var filename string
+	if opt.Bvid != "" {
+		filename = opt.Bvid
+	} else {
+		filename = Avid2Bvid(int64(avid))
+	}
 	oid := strconv.Itoa(avid)
 	total, err := FetchCount(oid)
 	downloadedCount := 0
@@ -127,10 +132,11 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 
 		downloadedCount += len(cmtCollection)
 		slog.Info(fmt.Sprintf("视频%s，已爬取%d条评论，预计剩余%d条", oid, downloadedCount, total-downloadedCount))
-		go store.Save2CSV(opt.Bvid, cmtCollection, savePath, opt.ImgDownload)
+
+		go store.Save2CSV(filename, cmtCollection, savePath, opt.ImgDownload)
 	}
 	if opt.Mapping {
-		store.WriteGeoJSON(statMap, opt.Bvid, savePath)
+		store.WriteGeoJSON(statMap, filename, savePath)
 
 	}
 }
@@ -206,7 +212,7 @@ func FindUser(sem chan struct{}, opt *model.Option) {
 	wg := sync.WaitGroup{}
 	round := opt.Skip + 1
 	var videoCollection = []model.VideoItem{}
-	for round < opt.Pages+opt.Skip {
+	for round <= opt.Pages+opt.Skip {
 		// 停顿2s
 		time.Sleep(2 * 1e9)
 		slog.Info(fmt.Sprintf("爬取视频列表第%d页", round))

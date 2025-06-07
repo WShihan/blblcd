@@ -9,7 +9,7 @@
 *.dylib
 /test/
 geo-template.geojson
-
+tests/
 # Test binary, built with `go test -c`
 *.test
 
