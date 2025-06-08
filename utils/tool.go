@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"math"
 	"os"
 	"path/filepath"
 )
@@ -55,4 +56,30 @@ func DecodePaginationOffset(paginationStr string) (*model.PaginationOffset, erro
 		return nil, err
 	}
 	return &paginationOffset, nil
+}
+
+func ProgressBar(current int, total int) {
+	var percent float64
+	if total > 0 {
+		percent = float64(current) / float64(total) * 100
+	} else {
+		percent = 0
+	}
+
+	percent = math.Min(math.Max(percent, 0), 100)
+
+	barLength := 100
+	filled := int(float64(barLength) * percent / 100)
+	var bar string
+	for i := 0; i < barLength; i++ {
+		if i < filled {
+			bar += "="
+		} else if i == filled {
+			bar += ">"
+		} else {
+			bar += " "
+		}
+	}
+
+	fmt.Printf("\r[%s] 进度： %.0f%%\n", bar, percent)
 }

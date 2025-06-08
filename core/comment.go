@@ -126,7 +126,6 @@ func FetchSubComment(oid string, rpid int64, next int, cookie string) (data mode
 	defer body.Close()
 	dataStr, _ := io.ReadAll(res.Body)
 	json.Unmarshal(dataStr, &data)
-	slog.Info(fmt.Sprintf("xxxxx完成子评论获取，oid: %s, 第%d页xxxxx", oid, next))
 	return
 
 }

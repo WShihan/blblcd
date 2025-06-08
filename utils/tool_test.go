@@ -42,3 +42,8 @@ func TestDecodePaginationOffset(t *testing.T) {
 	t.Logf("%v", res)
 	t.Log(res)
 }
+
+func TestProgressBar(t *testing.T) {
+	ProgressBar(500, 1000)
+	t.Log("")
+}
