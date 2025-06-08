@@ -77,7 +77,7 @@ func ProgressBar(current int, total int) {
 		} else if i == filled {
 			bar += ">"
 		} else {
-			bar += " "
+			bar += "-"
 		}
 	}
 

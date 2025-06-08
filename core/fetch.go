@@ -15,7 +15,10 @@ import (
 )
 
 func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Option) {
+	startTime := time.Now().Unix()
 	defer func() {
+		endTime := time.Now().Unix()
+		slog.Info(fmt.Sprintf("*****爬取视频：%s评论完成，用时%d秒*****", opt.Bvid, endTime-startTime))
 		if err := recover(); err != nil {
 			slog.Error(fmt.Sprintf("爬取视频：%d失败", avid))
 			slog.Error(fmt.Sprint(err))
@@ -31,7 +34,7 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 	}
 	oid := strconv.Itoa(avid)
 	total, err := FetchCount(oid)
-	slog.Info(fmt.Sprintf(">>>视频%s总共有%d条评论<<<\n", oid, total))
+	slog.Info(fmt.Sprintf(">>>视频%s总共有%d条评论<<<\n", filename, total))
 	downloadedCount := 0
 	if err != nil {
 		slog.Error(err.Error())
@@ -48,12 +51,12 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 		// 停顿
 		// delay := (rand.Float32() + 1) * 1e9
 		// time.Sleep(time.Duration(delay))
-		slog.Info(fmt.Sprintf("爬取视频评论%s", oid))
+		slog.Info(fmt.Sprintf("爬取视频评论%s", filename))
 		round++
 		cmtInfo, _ := FetchComment(oid, round, opt.Corder, opt.Cookie, offsetStr)
 
 		if cmtInfo.Code != 0 {
-			slog.Error(fmt.Sprintf("请求评论失败，视频%s，第%d页失败", oid, round))
+			slog.Error(fmt.Sprintf("请求评论失败，视频%s，第%d页失败", filename, round))
 			slog.Error(cmtInfo.Message)
 			break
 		}
