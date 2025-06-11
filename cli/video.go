@@ -28,6 +28,7 @@ var videoCmd = &cobra.Command{
 			return
 		}
 
+		utils.PrintLogo()
 		for i := range args {
 			bvid := args[i]
 			opt := model.Option{
@@ -39,7 +40,6 @@ var videoCmd = &cobra.Command{
 				ImgDownload: imgDownload,
 				MaxTryCount: maxTryCount,
 			}
-			fmt.Printf("bvid" + bvid + "\n")
 			sem := make(chan struct{}, workers)
 			wg := sync.WaitGroup{}
 			wg.Add(1)

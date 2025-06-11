@@ -47,3 +47,8 @@ func TestProgressBar(t *testing.T) {
 	ProgressBar(500, 1000)
 	t.Log("")
 }
+
+func TestPrintLogo(t *testing.T) {
+	PrintLogo()
+	t.Log("")
+}
