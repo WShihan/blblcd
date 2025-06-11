@@ -51,7 +51,6 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 		// 停顿
 		// delay := (rand.Float32() + 1) * 1e9
 		// time.Sleep(time.Duration(delay))
-		slog.Info(fmt.Sprintf("爬取视频评论%s", filename))
 		round++
 		cmtInfo, _ := FetchComment(oid, round, opt.Corder, opt.Cookie, offsetStr)
 
@@ -139,7 +138,6 @@ func FindComment(sem chan struct{}, wg *sync.WaitGroup, avid int, opt *model.Opt
 		go store.Save2CSV(filename, cmtCollection, savePath, opt.ImgDownload)
 
 		if downloadedCount >= total {
-			slog.Info(fmt.Sprintf("*****爬取视频：%s评论完成*****", opt.Bvid))
 			break
 		}
 	}
