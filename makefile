@@ -31,7 +31,7 @@ build:
 	GOOS=windows GOARCH=amd64 $(OPTIONS) go build -trimpath -ldflags="-s -w $(ENV)" -o $(WIN_AMD)/blblcd.exe main.go
 
 	# 编译为 Windows 平台 arm64
-	GOOS=windows GOARCH=amd64 $(OPTIONS) go build -trimpath -ldflags="-s -w $(ENV)" -o $(WIN_ARM)/blblcd.exe main.go
+	GOOS=windows GOARCH=arm64 $(OPTIONS) go build -trimpath -ldflags="-s -w $(ENV)" -o $(WIN_ARM)/blblcd.exe main.go
 
 clean:
 	rm -rf $(BUILD_DIR)/$(BINARY_NAME)_*/blblcd
