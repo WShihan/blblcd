@@ -1,5 +1,10 @@
+![GitHub Repo stars](https://img.shields.io/github/stars/WShihan/blblcd?style=plastic) ![GitHub repo size](https://img.shields.io/github/repo-size/WShihan/blblcd?style=plastic) ![GitHub last commit](https://img.shields.io/github/last-commit/WShihan/blblcd?style=plastic) ![GitHub](https://img.shields.io/github/license/WShihan/blblcd?style=plastic)  ![GitHub top language](https://img.shields.io/github/languages/top/WShihan/blblcd?style=plastic) 
+
+---
+
 <p align="center">
 <img src="./example/blblcd.png" alt="blblcd" style="width:60px;margin: 0px auto" /></p>
+
 
 
 blblcd（Bilibili-Comment-Dowloader），一款基于[bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)的B站视频评论下载工具。
@@ -21,7 +26,7 @@ blblcd（Bilibili-Comment-Dowloader），一款基于[bilibili-API-collect](http
 🔔 请留意
 
 * 这是一个命令行程序，没有图形化界面。
-* 若爬取结果数量不对只有十几条评论和网页上看到的数量不一致，那么很大概率是cookie失效了。
+* 若爬取结果数量不对只有十几条评论和网页上看到的数量不一致，那么很大概率是cookie失效导致。
 * 爬取结果的csv文件编码为utf-8，使用诸如Microsoft Office之类的办公软件打开会显示乱码，建议用记事本或者代码编辑器打开。
 * 目前以维护已有功能为主，该工具基本符合本人需求，暂不接受新增功能开发请求。当然如果你发现已有功能出现bug，欢迎提交issue，我将尽力去解决。
 
