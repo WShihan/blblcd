@@ -5,11 +5,13 @@ import (
 	"blblcd/utils"
 	"encoding/csv"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 func parseInt64(num int64) string {
@@ -27,30 +29,84 @@ func CMT2Record(cmt model.Comment) (record []string) {
 	}
 	return []string{
 		cmt.Bvid, cmt.Uname, cmt.Sex, cmt.Content, picURLs,
-		parseInt64(cmt.Rpid), parseInt(cmt.Oid), parseInt(cmt.Mid),
-		parseInt(cmt.Parent), parseInt(cmt.Fansgrade), parseInt(cmt.Ctime),
-		parseInt(cmt.Like), fmt.Sprint(cmt.Following), parseInt(cmt.Current_level), cmt.Location,
+		parseInt64(cmt.Rpid), parseInt64(cmt.Oid), parseInt64(cmt.Mid),
+		parseInt64(cmt.Parent), parseInt(cmt.Fansgrade), parseInt64(cmt.Ctime),
+		parseInt64(cmt.Like), parseInt(cmt.Current_level), cmt.Location,
 	}
 }
 
-func Save2CSV(filename string, cmts []model.Comment, output string, downloadIMG bool) {
-	defer func() {
-		if err := recover(); err != nil {
-			slog.Error("写入CSV错误:", err)
+func ReadExistCommentRpids(filename string) (map[int64]bool, error) {
+	existRpids := make(map[int64]bool)
+	if !utils.FileOrPathExists(filename) {
+		return existRpids, nil
+	}
+
+	file, err := os.Open(filename)
+	if err != nil {
+		slog.Error("打开csv文件错误", "err", err)
+		return existRpids, err
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+
+	header, err := reader.Read()
+	if err != nil {
+		return existRpids, nil // empty file or read error
+	}
+
+	rpidIndex := -1
+	for i, col := range header {
+		if col == "rpid" {
+			rpidIndex = i
+			break
 		}
-	}()
+	}
+
+	if rpidIndex == -1 {
+		slog.Error("在csv文件中未找到rpid字段", "header", header)
+		return existRpids, nil
+	}
+
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			slog.Error("读取csv记录错误", "err", err)
+			return existRpids, err
+		}
+
+		if len(record) > rpidIndex {
+			rpid, err := strconv.ParseInt(record[rpidIndex], 10, 64)
+			if err == nil {
+				existRpids[rpid] = true
+			}
+		}
+	}
+
+	return existRpids, nil
+}
+
+func Save2CSV(csvMutex *sync.Mutex, imageMutex *sync.Mutex, basename string, cmts []model.Comment, output string, downloadIMG bool) {
+	csvMutex.Lock()
+	defer csvMutex.Unlock()
+
 	utils.PresetPath(output)
 	if len(cmts) == 0 {
 		return
 	}
-	csv_path := filepath.Join(output, filename+".csv")
-	if utils.FileOrPathExists(csv_path) {
-		file, err := os.OpenFile(csv_path, os.O_WRONLY|os.O_APPEND, 0644)
+	var wg sync.WaitGroup
+	csvPath := filepath.Join(output, basename+".csv")
+	if utils.FileOrPathExists(csvPath) {
+		file, err := os.OpenFile(csvPath, os.O_WRONLY|os.O_APPEND, 0666)
 		if err != nil {
 			slog.Error(fmt.Sprintf("打开csv文件错误，oid:%d", cmts[0].Oid))
 			return
 		}
 		defer file.Close()
+		defer file.Sync()
 
 		writer := csv.NewWriter(file)
 		defer writer.Flush()
@@ -61,7 +117,11 @@ func Save2CSV(filename string, cmts []model.Comment, output string, downloadIMG 
 			}
 			if downloadIMG {
 				if len(cmt.Pictures) != 0 {
-					go WriteImage(cmt.Uname, cmt.Pictures, output+"/"+"images")
+					wg.Add(1)
+					go func(c model.Comment) {
+						defer wg.Done()
+						WriteImage(imageMutex, c.Uname, c.Pictures, output+"/"+"images")
+					}(cmt)
 				}
 			}
 
@@ -75,16 +135,17 @@ func Save2CSV(filename string, cmts []model.Comment, output string, downloadIMG 
 		slog.Info(fmt.Sprintf("追加评论至csv文件成功，oid:%d", cmts[0].Oid))
 
 	} else {
-		file, err := os.Create(csv_path)
+		file, err := os.OpenFile(csvPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
 		if err != nil {
 			slog.Error(fmt.Sprintf("创建csv文件错误，oid:%d", cmts[0].Oid))
 			return
 		}
 		defer file.Close()
+		defer file.Sync()
 
 		writer := csv.NewWriter(file)
 		defer writer.Flush()
-		headers := "bvid,upname,sex,content,pictures,rpid,oid,mid,parent,fans_grade,ctime,like,following,level,location"
+		headers := "bvid,upname,sex,content,pictures,rpid,oid,mid,parent,fans_grade,ctime,like,level,location"
 		headerErr := writer.Write(strings.Split(headers, ","))
 		if headerErr != nil {
 			slog.Error(fmt.Sprintf("写入csv文件字段错误，oid:%d", cmts[0].Oid))
@@ -97,7 +158,11 @@ func Save2CSV(filename string, cmts []model.Comment, output string, downloadIMG 
 			}
 			if downloadIMG {
 				if len(cmt.Pictures) != 0 {
-					go WriteImage(cmt.Uname, cmt.Pictures, output+"/"+"images")
+					wg.Add(1)
+					go func(c model.Comment) {
+						defer wg.Done()
+						WriteImage(imageMutex, c.Uname, c.Pictures, output+"/"+"images")
+					}(cmt)
 				}
 			}
 
@@ -111,4 +176,5 @@ func Save2CSV(filename string, cmts []model.Comment, output string, downloadIMG 
 		slog.Info(fmt.Sprintf("写入csv文件成功，oid:%d", cmts[0].Oid))
 	}
 
+	wg.Wait()
 }

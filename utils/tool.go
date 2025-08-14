@@ -15,13 +15,13 @@ func FileOrPathExists(filePath string) bool {
 	return !os.IsNotExist(err)
 }
 
-func ExcutePath() string {
-	excutePath, err := os.Executable()
+func ExecutePath() string {
+	executePath, err := os.Executable()
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
 	}
-	return filepath.Dir(excutePath)
+	return filepath.Dir(executePath)
 }
 
 func ReadTextFile(path string) (string, error) {
@@ -34,7 +34,9 @@ func ReadTextFile(path string) (string, error) {
 
 func PresetPath(path string) {
 	if !FileOrPathExists(path) {
-		os.MkdirAll(path, os.ModePerm)
+		if err := os.MkdirAll(path, os.ModePerm); err != nil {
+			slog.Error("failed to create directory", "path", path, "err", err)
+		}
 	}
 }
 
@@ -58,7 +60,7 @@ func DecodePaginationOffset(paginationStr string) (*model.PaginationOffset, erro
 	return &paginationOffset, nil
 }
 
-func ProgressBar(current int, total int) {
+func ProgressBar(current int64, total int64) {
 	var percent float64
 	if total > 0 {
 		percent = float64(current) / float64(total) * 100

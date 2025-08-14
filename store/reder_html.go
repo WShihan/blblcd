@@ -16,6 +16,9 @@ type Data struct {
 
 func RenderHTML(title string, geofile string, output string) (ok bool, err error) {
 	geojson, err := os.ReadFile(geofile)
+	if err != nil {
+		panic(err)
+	}
 
 	HtmlData := Data{
 		Title: title,

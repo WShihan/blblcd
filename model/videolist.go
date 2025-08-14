@@ -1,9 +1,9 @@
 package model
 
 type VideoItem struct {
-	Comment          int    `json:"comment"`
+	Comment          int64  `json:"comment"`
 	Typeid           int    `json:"typeid"`
-	Play             int    `json:"play"`
+	Play             int64  `json:"play"`
 	Pic              string `json:"pic"`
 	Subtitle         string `json:"subtitle"`
 	Description      string `json:"description"`
@@ -11,11 +11,11 @@ type VideoItem struct {
 	Title            string `json:"title"`
 	Review           int    `json:"review"`
 	Author           string `json:"author"`
-	Mid              int    `json:"mid"`
-	Created          int    `json:"created"`
+	Mid              int64  `json:"mid"`
+	Created          int64  `json:"created"`
 	Length           string `json:"length"`
-	VideoReview      int    `json:"video_review"`
-	Aid              int    `json:"aid"`
+	VideoReview      int64  `json:"video_review"`
+	Aid              int64  `json:"aid"`
 	Bvid             string `json:"bvid"`
 	HideClick        bool   `json:"hide_click"`
 	IsPay            int    `json:"is_pay"`

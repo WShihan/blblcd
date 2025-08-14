@@ -1,13 +1,11 @@
 package core
 
 import (
+	"blblcd/client"
 	"crypto/md5"
 	"encoding/hex"
-	"fmt"
-	"io"
-	"net/http"
+	"log/slog"
 	"net/url"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -53,28 +51,15 @@ func SignAndGenerateURL(urlStr string, cookie string) (string, error) {
 
 func encWbi(params map[string]string, imgKey, subKey string) map[string]string {
 	mixinKey := getMixinKey(imgKey + subKey)
-	currTime := strconv.FormatInt(time.Now().Unix(), 10)
+	currTime := strconv.FormatInt(time.Now().Round(time.Second).Unix(), 10)
 	params["wts"] = currTime
-
-	// Sort keys
-	keys := make([]string, 0, len(params))
-	for k := range params {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	// Remove unwanted characters
-	for k, v := range params {
-		v = sanitizeString(v)
-		params[k] = v
-	}
 
 	// Build URL parameters
 	query := url.Values{}
-	for _, k := range keys {
-		query.Set(k, params[k])
+	for k, v := range params {
+		query.Set(k, v)
 	}
-	queryStr := query.Encode()
+	queryStr := query.Encode() // sorted by key
 
 	// Calculate w_rid
 	hash := md5.Sum([]byte(queryStr + mixinKey))
@@ -90,14 +75,6 @@ func getMixinKey(orig string) string {
 		}
 	}
 	return str.String()[:32]
-}
-
-func sanitizeString(s string) string {
-	unwantedChars := []string{"!", "'", "(", ")", "*"}
-	for _, char := range unwantedChars {
-		s = strings.ReplaceAll(s, char, "")
-	}
-	return s
 }
 
 func updateCache(cookie string) {
@@ -118,30 +95,14 @@ func getWbiKeysCached(cookie string) (string, string) {
 }
 
 func getWbiKeys(cookie string) (string, string) {
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://api.bilibili.com/x/web-interface/nav", nil)
+	resp, err := client.Client.R().SetHeader("Cookie", string(cookie)).Get("https://api.bilibili.com/x/web-interface/nav")
 	if err != nil {
-		fmt.Printf("Error creating request: %s", err)
+		slog.Error("Error sending request", "err", err)
 		return "", ""
 	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-	req.Header.Set("Referer", "https://www.bilibili.com/")
-	req.Header.Set("Cookie", string(cookie))
-
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Printf("Error sending request: %s", err)
-		return "", ""
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Printf("Error reading response: %s", err)
-		return "", ""
-	}
-	json := string(body)
-	imgURL := gjson.Get(json, "data.wbi_img.img_url").String()
-	subURL := gjson.Get(json, "data.wbi_img.sub_url").String()
+	json := gjson.Parse(resp.String())
+	imgURL := json.Get("data.wbi_img.img_url").String()
+	subURL := json.Get("data.wbi_img.sub_url").String()
 	imgKey := strings.Split(strings.Split(imgURL, "/")[len(strings.Split(imgURL, "/"))-1], ".")[0]
 	subKey := strings.Split(strings.Split(subURL, "/")[len(strings.Split(subURL, "/"))-1], ".")[0]
 	return imgKey, subKey

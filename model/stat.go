@@ -6,6 +6,6 @@ type Stat struct {
 	Location int
 	Sex      map[string]int
 	Level    [7]int // 登记 1-7
-	Like     int
+	Like     int64
 	// Following int
 }

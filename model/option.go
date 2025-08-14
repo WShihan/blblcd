@@ -2,7 +2,7 @@ package model
 
 type Option struct {
 	Cookie      string
-	Mid         int
+	Mid         int64
 	Pages       int
 	Skip        int
 	Vorder      string

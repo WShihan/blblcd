@@ -5,7 +5,7 @@ type CommentsCountResponse struct {
 	Message string `json:"message"`
 	TTL     int    `json:"ttl"`
 	Data    struct {
-		Count int `json:"count"`
+		Count int64 `json:"count"`
 	} `json:"data"`
 }
 
@@ -20,7 +20,7 @@ type Cursor struct {
 	SessionID   string `json:"session_id"`
 	Mode        int    `json:"mode"`
 	ModeText    string `json:"mode_text"`
-	AllCount    int    `json:"all_count"`
+	AllCount    int64  `json:"all_count"`
 	SupportMode []int  `json:"support_mode"`
 	Name        string `json:"name"`
 }
@@ -29,13 +29,13 @@ type Comment struct {
 	Sex           string    //性别
 	Content       string    //评论内容
 	Rpid          int64     //评论id
-	Oid           int       //评论区id
+	Oid           int64     //评论区id
 	Bvid          string    //视频bv
-	Mid           int       //发送者id
-	Parent        int       //若为一级评论则为 0若为二级评论则为根评论 rpid大于二级评论为上一级评 论 rpid
+	Mid           int64     //发送者id
+	Parent        int64     //若为一级评论则为 0若为二级评论则为根评论 rpid大于二级评论为上一级评 论 rpid
 	Fansgrade     int       //是否粉丝标签
-	Ctime         int       //评论时间戳
-	Like          int       //喜欢数
+	Ctime         int64     //评论时间戳
+	Like          int64     //喜欢数
 	Following     bool      //是否关注
 	Current_level int       //当前等级
 	Location      string    //位置
@@ -47,22 +47,22 @@ type Picture struct {
 }
 type ReplyItem struct {
 	Rpid      int64  `json:"rpid"`
-	Oid       int    `json:"oid"`
+	Oid       int64  `json:"oid"`
 	Type      int    `json:"type"`
-	Mid       int    `json:"mid"`
-	Root      int    `json:"root"`
-	Parent    int    `json:"parent"`
-	Dialog    int    `json:"dialog"`
-	Count     int    `json:"count"`
-	Rcount    int    `json:"rcount"`
+	Mid       int64  `json:"mid"`
+	Root      int64  `json:"root"`
+	Parent    int64  `json:"parent"`
+	Dialog    int64  `json:"dialog"`
+	Count     int64  `json:"count"`
+	Rcount    int64  `json:"rcount"`
 	State     int    `json:"state"`
 	Fansgrade int    `json:"fansgrade"`
 	Attr      int    `json:"attr"`
-	Ctime     int    `json:"ctime"`
+	Ctime     int64  `json:"ctime"`
 	MidStr    string `json:"mid_str"`
 	OidStr    string `json:"oid_str"`
 	RpidStr   string `json:"rpid_str"`
-	Like      int    `json:"like"`
+	Like      int64  `json:"like"`
 	Action    int    `json:"action"`
 	Member    struct {
 		Mid            string `json:"mid"`
@@ -105,7 +105,7 @@ type ReplyItem struct {
 				Meta      struct {
 					Size int `json:"size"`
 				} `json:"meta"`
-				Mtime     int    `json:"mtime"`
+				Mtime     int64  `json:"mtime"`
 				JumpTitle string `json:"jump_title"`
 			} `json:"[吃瓜]"`
 		} `json:"emote"`
@@ -130,10 +130,10 @@ type CommentResponse struct {
 	Data    struct {
 		Cursor Cursor `json:"cursor"`
 		Page   struct {
-			Num    int `json:"num"`
-			Size   int `json:"size"`
-			Count  int `json:"count"`
-			Acount int `json:"acount"`
+			Num    int64 `json:"num"`
+			Size   int64 `json:"size"`
+			Count  int64 `json:"count"`
+			Acount int64 `json:"acount"`
 		} `json:"page"`
 		Replies    []ReplyItem `json:"replies"`
 		TopReplies []ReplyItem `json:"top_replies"`
