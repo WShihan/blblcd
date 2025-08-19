@@ -47,7 +47,7 @@ var upCmd = &cobra.Command{
 
 		utils.PrintLogo()
 		opt := model.Option{
-			Mid:         int(mid),
+			Mid:         mid,
 			Pages:       pages,
 			Skip:        skip,
 			Vorder:      vorder,

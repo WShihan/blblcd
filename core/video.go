@@ -1,23 +1,15 @@
 package core
 
 import (
+	"blblcd/client"
 	"blblcd/model"
-	"encoding/json"
 	"fmt"
-	"io"
 	"log/slog"
-	"net/http"
 	"net/url"
-	"strings"
+	"strconv"
 )
 
-func FetchVideoList(mid int, page int, order string, cookie string) (videoList model.VideoListResponse, err error) {
-	defer func() {
-		if err := recover(); err != nil {
-			slog.Error(fmt.Sprintf("爬取up主视频列表失败,mid:%d", mid))
-			slog.Error(fmt.Sprint(err))
-		}
-	}()
+func FetchVideoList(mid int64, page int, order string, cookie string) (videoList model.VideoListResponse, err error) {
 	api := "https://api.bilibili.com/x/space/wbi/arc/search?"
 	params := url.Values{}
 	params.Set("mid", fmt.Sprint(mid))
@@ -27,27 +19,28 @@ func FetchVideoList(mid int, page int, order string, cookie string) (videoList m
 	params.Set("ps", "30")
 	params.Set("tid", "0")
 
-	client := http.Client{}
 	crypedApi, _ := SignAndGenerateURL(api+params.Encode(), cookie)
 
-	req, _ := http.NewRequest("GET", crypedApi, strings.NewReader(""))
-
-	req.Header.Add("Origin", "https://space.bilibili.com")
-	req.Header.Add("Host", Host)
-	req.Header.Add("Referer", Origin)
-	req.Header.Add("User-agent", UserAgent)
-	req.Header.Add("Cookie", cookie)
-
-	resp, err := client.Do(req)
+	resp, err := client.
+		Client.
+		R().
+		SetHeader("Origin", "https://space.bilibili.com").
+		SetHeader("Referer", client.Origin+"/"+strconv.FormatInt(mid, 10)).
+		SetHeader("Cookie", cookie).
+		Get(crypedApi)
 	if err != nil {
-		slog.Error("parse json error:" + err.Error())
+		slog.Error("get json error", "err", err.Error())
 	}
-	defer resp.Body.Close()
+	if resp.IsErrorState() {
+		slog.Error("get json state error", "body", resp.String())
+		return
+	}
 
-	jsonByte, _ := io.ReadAll(resp.Body)
-	slog.Info(resp.Status)
-	json.Unmarshal(jsonByte, &videoList)
+	err = resp.Unmarshal(&videoList)
+	if err != nil {
+		slog.Error("parse json error", "err", err.Error())
+	}
+
 	slog.Info(fmt.Sprintf("爬取up主视频列表成功,mid:%d，第%d页", mid, page))
 	return
-
 }

@@ -29,6 +29,9 @@ var videoCmd = &cobra.Command{
 		}
 
 		utils.PrintLogo()
+
+		sem := make(chan struct{}, workers)
+		wg := sync.WaitGroup{}
 		for i := range args {
 			bvid := args[i]
 			opt := model.Option{
@@ -40,12 +43,17 @@ var videoCmd = &cobra.Command{
 				ImgDownload: imgDownload,
 				MaxTryCount: maxTryCount,
 			}
-			sem := make(chan struct{}, workers)
-			wg := sync.WaitGroup{}
-			wg.Add(1)
-			go core.FindComment(sem, &wg, int(core.Bvid2Avid(bvid)), &opt)
-			wg.Wait()
-		}
 
+			sem <- struct{}{}
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				defer func() {
+					<-sem
+				}()
+				core.FindComment(core.Bvid2Avid(bvid), &opt)
+			}()
+		}
+		wg.Wait()
 	},
 }
