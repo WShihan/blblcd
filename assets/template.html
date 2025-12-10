@@ -3,7 +3,11 @@
   <head>
     <title>{{ .Title }} 评论地区分布</title>
     <script src="https://cdn.jsdelivr.net/npm/openlayers@4.6.5/dist/ol.min.js"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.js"></script>
+    <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/WShihan/blblcd/refs/heads/main/example/blblcd.png"
+      type="image/x-icon"
+    />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/openlayers@4.6.5/dist/ol.min.css" />
     <style>
       html {
@@ -11,6 +15,9 @@
         overflow: hidden;
       }
       #map {
+        cursor: pointer;
+      }
+      #map :active {
         cursor: pointer;
       }
       .popup {

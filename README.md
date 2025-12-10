@@ -3,13 +3,11 @@
 ---
 
 <p align="center">
-<img src="./example/blblcd.png" alt="blblcd" style="width:60px;margin: 0px auto" /></p>
+<img src="./example/blblcd.png" alt="blblcd" style="width:3em;margin: 0px auto" /></p>
 
+blblcd（Bilibili Comment Dowloader），一款基于 [bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect) 的B站视频评论下载工具。
 
-
-blblcd（Bilibili-Comment-Dowloader），一款基于[bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)的B站视频评论下载工具。
-
-
+🗂️仓库：[Codeberg](https://codeberg.org/wsh233/blblcd) | [GitHub](https://github.com/WShihan/blblcd) 
 
 特点：
 
