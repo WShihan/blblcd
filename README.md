@@ -192,9 +192,7 @@ blblcd up 123344555  --workers 10
 
 
 
-#### 输出地图模板
-
-需要在程序所在位置添加`geo-template.geojson`，该资源已包含在release里。
+#### 输出地图统计
 
 ```bash
 blblcd video BV1VJ4m1jk34K --mapping 
