@@ -1,6 +1,7 @@
 package store
 
 import (
+	"blblcd/assets"
 	"blblcd/model"
 	"blblcd/utils"
 	"encoding/json"
@@ -14,7 +15,9 @@ import (
 
 func WriteGeoJSON(statMap map[string]model.Stat, filename string, output string) {
 	// 读取GeoJSON文件
-	data, err := os.ReadFile(utils.ExecutePath() + "/geo-template.geojson")
+	data, err := assets.Assets.ReadFile("china_rec.geojson")
+	olJSData, err := assets.Assets.ReadFile("ol.js")
+	olCssData, err := assets.Assets.ReadFile("ol.css")
 	geojsonOutput := filepath.Join(output, filename+".geojson")
 	if err != nil {
 		slog.Error("读取文件错误" + err.Error())
@@ -55,6 +58,8 @@ func WriteGeoJSON(statMap map[string]model.Stat, filename string, output string)
 	}
 
 	err = os.WriteFile(geojsonOutput, outputData, 0666)
+	err = os.WriteFile(filepath.Join(output, "ol.js"), olJSData, 0666)
+	err = os.WriteFile(filepath.Join(output, "ol.css"), olCssData, 0666)
 	if err != nil {
 		slog.Error("写入geojson错误:" + err.Error())
 		return
