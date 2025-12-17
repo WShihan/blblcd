@@ -5,9 +5,11 @@ import (
 	"blblcd/store"
 	"blblcd/utils"
 	"fmt"
+	"log"
 	"log/slog"
 	"math/rand"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -57,10 +59,14 @@ func FindComment(avid int64, opt *model.Option) {
 	offsetStr := ""
 	defer func() {
 		endTime := time.Now().Unix()
+		absPath, err := filepath.Abs(path.Join(opt.Output, opt.Bvid))
+		if err != nil {
+			log.Fatal(fmt.Sprintf("获取绝对路径异常：%s", err.Error()))
+		}
 		if totalCount == 0 || downloadedCount != totalCount {
 			slog.Info(fmt.Sprintf("视频：%d 预期有 %d 条评论, 但实际获取了 %d 条", avid, totalCount, downloadedCount))
 		}
-		slog.Info(fmt.Sprintf("*****爬取视频：%s评论完成，用时%d秒*****", opt.Bvid, endTime-startTime))
+		slog.Info(fmt.Sprintf("***** 爬取视频：%s评论完成，用时%d秒，保存至 %s***** ", opt.Bvid, endTime-startTime, absPath))
 	}()
 
 	for {
