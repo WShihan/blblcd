@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
+	"math/rand"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 func FileOrPathExists(filePath string) bool {
@@ -122,4 +124,17 @@ func PrintLogo() {
                                                                                                                       
                                                                                                               `
 	fmt.Println(logo)
+}
+
+// RandomDelay 随机延迟
+func RandomDelay(maxSec float64) {
+	minSec := 1.0
+	if minSec > maxSec {
+		fmt.Println("错误: a 不能大于 b")
+		return
+	}
+	randomDuration := minSec + rand.Float64()*(maxSec-minSec)
+	sleepTime := time.Duration(randomDuration * float64(time.Second))
+	time.Sleep(sleepTime)
+
 }

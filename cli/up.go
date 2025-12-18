@@ -58,6 +58,7 @@ var upCmd = &cobra.Command{
 			Output:      output,
 			ImgDownload: imgDownload,
 			MaxTryCount: maxTryCount,
+			MaxDelaySec: maxDelaySec,
 		}
 		sem := make(chan struct{}, workers)
 		core.FindUser(sem, &opt)

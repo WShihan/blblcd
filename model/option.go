@@ -12,4 +12,5 @@ type Option struct {
 	Mapping     bool
 	ImgDownload bool
 	MaxTryCount int
+	MaxDelaySec float64
 }

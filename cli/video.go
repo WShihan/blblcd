@@ -42,6 +42,7 @@ var videoCmd = &cobra.Command{
 				Output:      output,
 				ImgDownload: imgDownload,
 				MaxTryCount: maxTryCount,
+				MaxDelaySec: maxDelaySec,
 			}
 
 			sem <- struct{}{}

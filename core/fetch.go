@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
-	"math/rand"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -31,7 +30,7 @@ func FindComment(avid int64, opt *model.Option) {
 		return
 	}
 	slog.Info(fmt.Sprintf(">>>视频%s总共有%d条评论<<<\n", filename, totalCount))
-	time.Sleep(time.Duration((rand.Float32() + 1) * 1e8))
+	utils.RandomDelay(opt.MaxDelaySec)
 
 	savePath := path.Join(opt.Output, opt.Bvid)
 	utils.PresetPath(savePath)
@@ -80,7 +79,7 @@ func FindComment(avid int64, opt *model.Option) {
 			slog.Error(cmtInfo.Message)
 			break
 		}
-		time.Sleep(time.Duration((rand.Float32() + 1) * 1e9))
+		utils.RandomDelay(opt.MaxDelaySec)
 
 		if len(cmtInfo.Data.Replies) != 0 {
 			offsetStr = cmtInfo.Data.Cursor.PaginationReply.NextOffset
@@ -191,7 +190,7 @@ func FindSubComment(cmt model.ReplyItem, opt *model.Option) []model.ReplyItem {
 			slog.Error(cmtInfo.Message)
 			break
 		}
-		time.Sleep(time.Duration((rand.Float32() + 1) * 1.5e9))
+		utils.RandomDelay(opt.MaxDelaySec)
 
 		if len(cmtInfo.Data.Replies) > 0 {
 			replyCollection = append(replyCollection, cmtInfo.Data.Replies...)
@@ -247,7 +246,7 @@ func FindUser(sem chan struct{}, opt *model.Option) {
 			slog.Error(fmt.Sprintf("请求up主视频列表失败，第%d页失败", round))
 			slog.Error(tempVideoInfo.Message)
 		}
-		time.Sleep(time.Duration((rand.Float32() + 1) * 3e9))
+		utils.RandomDelay(opt.MaxDelaySec)
 
 		if len(tempVideoInfo.Data.List.Vlist) != 0 {
 			videoCollection = append(videoCollection, tempVideoInfo.Data.List.Vlist...)
@@ -275,7 +274,8 @@ func FindUser(sem chan struct{}, opt *model.Option) {
 			}()
 			FindComment(k.Aid, opt)
 		}(k.Aid)
-		time.Sleep(time.Duration((rand.Float32() + 1) * 3e9))
+		utils.RandomDelay(3)
+
 	}
 	wg.Wait()
 }

@@ -9,13 +9,11 @@ import (
 	"fmt"
 	"io/fs"
 	"log/slog"
-	"math/rand/v2"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
-	"time"
 )
 
 func fetchImage(imageUrl string) ([]byte, error) {
@@ -95,7 +93,8 @@ func WriteImage(mu *sync.Mutex, uname string, pics []model.Picture, output strin
 			DownloadImg(sem, mu, imageUrl, output, uname)
 		}(pic.Img_src)
 
-		time.Sleep(time.Duration((rand.Float32() + 1) * 2e7))
+		utils.RandomDelay(1)
+
 	}
 	wg.Wait()
 }

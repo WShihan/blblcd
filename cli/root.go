@@ -16,6 +16,7 @@ var (
 	corder      int
 	imgDownload bool
 	maxTryCount int
+	maxDelaySec float64
 )
 
 var rootCmd = &cobra.Command{
@@ -33,6 +34,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&imgDownload, "img-download", "i", false, "是否下载评论中的图片")
 	rootCmd.PersistentFlags().IntVarP(&workers, "workers", "w", 5, "最多协程数量")
 	rootCmd.PersistentFlags().IntVarP(&maxTryCount, "max-try-count", "u", 3, "当爬取结果为空时请求最大尝试次数")
+	rootCmd.PersistentFlags().Float64VarP(&maxDelaySec, "max-delay", "d", 1, "爬取最大延迟时间，单位秒")
 	rootCmd.PersistentFlags().IntVarP(&corder, "corder", "v", 2, "爬取时评论排序方式，0：按热度，1：按热度+按时间，2：按时间，3：按热度")
 }
 
