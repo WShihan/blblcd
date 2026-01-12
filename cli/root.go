@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"blblcd/model"
 	"fmt"
 	"os"
 
@@ -8,7 +9,7 @@ import (
 )
 
 var (
-	Inject      *Injection
+	Inject      *model.Injection
 	cookieFile  string
 	output      string
 	mapping     bool
@@ -38,7 +39,7 @@ func init() {
 	rootCmd.PersistentFlags().IntVarP(&corder, "corder", "v", 2, "爬取时评论排序方式，0：按热度，1：按热度+按时间，2：按时间，3：按热度")
 }
 
-func Execute(injection *Injection) {
+func Execute(injection *model.Injection) {
 	Inject = injection
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

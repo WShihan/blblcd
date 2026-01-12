@@ -1,6 +1,9 @@
 package main
 
-import "blblcd/cli"
+import (
+	"blblcd/cli"
+	"blblcd/model"
+)
 
 var (
 	Version   string
@@ -10,7 +13,7 @@ var (
 )
 
 func main() {
-	cli.Execute(&cli.Injection{
+	cli.Execute(&model.Injection{
 		Version:   Version,
 		BuildTime: BuildTime,
 		Commit:    Commit,

@@ -1,4 +1,4 @@
-package cli
+package model
 
 type Injection struct {
 	Version   string
