@@ -23,13 +23,12 @@ blblcd（Bilibili Comment Dowloader），一款基于 [bilibili-API-collect](htt
 
 🔔 请留意
 
-* 由于GitHub访问原因，0.1.8之后的版本，其编译后的二进制产物将只发布在[Codeberg](https://codeberg.org/wsh233/blblcd/releases) 平台。
 * 这是一个命令行程序，没有图形化界面。
 * 若爬取结果数量不对只有十几条评论和网页上看到的数量不一致，那么很大概率是cookie失效导致。
 * 爬取结果的csv文件编码为utf-8，使用诸如Microsoft Office之类的办公软件打开会显示乱码，建议用记事本或者代码编辑器打开。
 * 目前以维护已有功能为主，该工具基本符合本人需求，暂不接受新增功能开发请求。当然如果你发现已有功能出现bug，欢迎提交issue，我将尽力去解决。
 
-⚠️ 最新代码托管在[Codeberg](https://codeberg.org/wsh233/blblcd)，本仓库仅作为备份，同步更新可能存在延迟。
+⚠️⚠️⚠️ 最新代码托管在[Codeberg](https://codeberg.org/wsh233/blblcd)，本仓库仅作为备份，同步更新可能存在延迟，由于GitHub访问原因，0.1.8之后的版本，其编译后的二进制产物将只发布在[Codeberg](https://codeberg.org/wsh233/blblcd/releases) 。
 
 爬取评论信息如下：
 
