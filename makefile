@@ -1,6 +1,6 @@
 BINARY_NAME = blblcd
 BUILD_DIR = bin
-VERSION ?= $(shell git tag --sort=-creatordate | head -n 1)
+VERSION ?= $(shell git tag --sort=-creatordate | head -n 1 | sed 's/^[vV]//')
 OPTIONS = CGO_ENABLED=0
 COMMIT = $(shell git rev-parse HEAD)
 BUILD_TIME = $(shell date +%Y-%m-%dT%H:%M:%S)
