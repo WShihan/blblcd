@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -31,7 +32,14 @@ func ReadTextFile(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(data), nil
+	text := strings.TrimSpace(string(data))
+	text = strings.TrimPrefix(text, "Cookie:")
+	text = strings.TrimPrefix(text, "cookie:")
+	text = strings.TrimSpace(text)
+	text = strings.ReplaceAll(text, "\r", "")
+	text = strings.ReplaceAll(text, "\n", "")
+	text = strings.ReplaceAll(text, "\t", "")
+	return text, nil
 }
 
 func PresetPath(path string) {
