@@ -7,9 +7,11 @@
 
 blblcd（Bilibili Comment Dowloader），一款基于 [bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect) 的B站视频评论下载工具。
 
-🗂️仓库：[Codeberg](https://codeberg.org/wsh233/blblcd) | [GitHub](https://github.com/WShihan/blblcd) 
+🗂️ 仓库： [Codeberg](https://codeberg.org/wsh233/blblcd) | [GitHub](https://github.com/WShihan/blblcd) 
 
-特点：
+
+
+🎉 特点
 
 * 使用方便，仅包含一个可执行文件，无需安装其他依赖。
 * 下载单/多个视频评论，可按热评/时间顺序。
@@ -28,7 +30,13 @@ blblcd（Bilibili Comment Dowloader），一款基于 [bilibili-API-collect](htt
 * 爬取结果的csv文件编码为utf-8，使用诸如Microsoft Office之类的办公软件打开会显示乱码，建议用记事本或者代码编辑器打开。
 * 目前以维护已有功能为主，该工具基本符合本人需求，暂不接受新增功能开发请求。当然如果你发现已有功能出现bug，欢迎提交issue，我将尽力去解决。
 
-⚠️ 最新代码托管在[Codeberg](https://codeberg.org/wsh233/blblcd)，本仓库仅作为备份，同步更新可能存在延迟，由于GitHub访问原因，0.1.8之后的版本，其编译后的二进制产物将只发布在[Codeberg Releases](https://codeberg.org/wsh233/blblcd/releases) 。
+
+
+⚠️ 请注意
+
+>  最新代码托管在[Codeberg](https://codeberg.org/wsh233/blblcd)，本仓库仅作为备份，同步更新可能存在延迟。由于GitHub访问原因，0.1.8之后的版本，其编译后的二进制产物将只发布在[Codeberg Releases](https://codeberg.org/wsh233/blblcd/releases) 。
+
+
 
 爬取评论信息如下：
 
@@ -65,10 +73,10 @@ blblcd（Bilibili Comment Dowloader），一款基于 [bilibili-API-collect](htt
 ## 需要准备
 
 * cookie ：必须
-* mid ：up编号，当查找up视频时必须
-* bvid：稿件视频编号，单独下载单个/多个视频评论时必须
+* mid ：up主编号，当查找up视频时必须
+* bvid：稿件视频编号，当单独下载单个/多个视频评论时必须
 
-然后到[release](https://codeberg.org/wsh233/blblcd/releases) 页面下载操作系统对应的二进制执行文件。
+然后到[release](https://codeberg.org/wsh233/blblcd/releases) 页面下载操作系统对应的二进制可执行文件。
 
 
 
