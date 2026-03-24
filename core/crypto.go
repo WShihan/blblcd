@@ -4,6 +4,8 @@ import (
 	"blblcd/client"
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
+	"fmt"
 	"log/slog"
 	"net/url"
 	"strconv"
@@ -34,13 +36,19 @@ func SignAndGenerateURL(urlStr string, cookie string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	imgKey, subKey := getWbiKeysCached(cookie)
+	imgKey, subKey, err := getWbiKeysCached(cookie)
+	if err != nil {
+		return "", err
+	}
 	query := urlObj.Query()
 	params := map[string]string{}
 	for k, v := range query {
 		params[k] = v[0]
 	}
-	newParams := encWbi(params, imgKey, subKey)
+	newParams, err := encWbi(params, imgKey, subKey)
+	if err != nil {
+		return "", err
+	}
 	for k, v := range newParams {
 		query.Set(k, v)
 	}
@@ -49,8 +57,11 @@ func SignAndGenerateURL(urlStr string, cookie string) (string, error) {
 	return newUrlStr, nil
 }
 
-func encWbi(params map[string]string, imgKey, subKey string) map[string]string {
-	mixinKey := getMixinKey(imgKey + subKey)
+func encWbi(params map[string]string, imgKey, subKey string) (map[string]string, error) {
+	mixinKey, err := getMixinKey(imgKey + subKey)
+	if err != nil {
+		return nil, err
+	}
 	currTime := strconv.FormatInt(time.Now().Round(time.Second).Unix(), 10)
 	params["wts"] = currTime
 
@@ -64,48 +75,91 @@ func encWbi(params map[string]string, imgKey, subKey string) map[string]string {
 	// Calculate w_rid
 	hash := md5.Sum([]byte(queryStr + mixinKey))
 	params["w_rid"] = hex.EncodeToString(hash[:])
-	return params
+	return params, nil
 }
 
-func getMixinKey(orig string) string {
+func getMixinKey(orig string) (string, error) {
 	var str strings.Builder
 	for _, v := range mixinKeyEncTab {
 		if v < len(orig) {
 			str.WriteByte(orig[v])
 		}
 	}
-	return str.String()[:32]
+	if str.Len() < 32 {
+		return "", fmt.Errorf("invalid mixin key length: %d", str.Len())
+	}
+	return str.String()[:32], nil
 }
 
-func updateCache(cookie string) {
+func updateCache(cookie string) error {
 	if time.Since(lastUpdateTime).Minutes() < 10 {
-		return
+		if imgKeyI, ok := cache.Load("imgKey"); ok {
+			if subKeyI, ok := cache.Load("subKey"); ok {
+				if imgKey, ok := imgKeyI.(string); ok && imgKey != "" {
+					if subKey, ok := subKeyI.(string); ok && subKey != "" {
+						return nil
+					}
+				}
+			}
+		}
 	}
-	imgKey, subKey := getWbiKeys(cookie)
+	imgKey, subKey, err := getWbiKeys(cookie)
+	if err != nil {
+		return err
+	}
 	cache.Store("imgKey", imgKey)
 	cache.Store("subKey", subKey)
 	lastUpdateTime = time.Now()
+	return nil
 }
 
-func getWbiKeysCached(cookie string) (string, string) {
-	updateCache(cookie)
-	imgKeyI, _ := cache.Load("imgKey")
-	subKeyI, _ := cache.Load("subKey")
-	return imgKeyI.(string), subKeyI.(string)
+func getWbiKeysCached(cookie string) (string, string, error) {
+	if err := updateCache(cookie); err != nil {
+		return "", "", err
+	}
+
+	imgKeyI, ok := cache.Load("imgKey")
+	if !ok {
+		return "", "", errors.New("missing imgKey in cache")
+	}
+	subKeyI, ok := cache.Load("subKey")
+	if !ok {
+		return "", "", errors.New("missing subKey in cache")
+	}
+
+	imgKey, ok := imgKeyI.(string)
+	if !ok || imgKey == "" {
+		return "", "", errors.New("invalid imgKey in cache")
+	}
+	subKey, ok := subKeyI.(string)
+	if !ok || subKey == "" {
+		return "", "", errors.New("invalid subKey in cache")
+	}
+
+	return imgKey, subKey, nil
 }
 
-func getWbiKeys(cookie string) (string, string) {
+func getWbiKeys(cookie string) (string, string, error) {
 	resp, err := client.Client.R().SetHeader("Cookie", string(cookie)).Get("https://api.bilibili.com/x/web-interface/nav")
 	if err != nil {
 		slog.Error("Error sending request", "err", err)
-		return "", ""
+		return "", "", err
+	}
+	if resp.IsErrorState() {
+		return "", "", fmt.Errorf("request nav failed: %s", resp.Status)
 	}
 	json := gjson.Parse(resp.String())
 	imgURL := json.Get("data.wbi_img.img_url").String()
 	subURL := json.Get("data.wbi_img.sub_url").String()
+	if imgURL == "" || subURL == "" {
+		return "", "", errors.New("missing wbi_img keys in nav response; check cookie validity")
+	}
 	imgKey := strings.Split(strings.Split(imgURL, "/")[len(strings.Split(imgURL, "/"))-1], ".")[0]
 	subKey := strings.Split(strings.Split(subURL, "/")[len(strings.Split(subURL, "/"))-1], ".")[0]
-	return imgKey, subKey
+	if imgKey == "" || subKey == "" {
+		return "", "", errors.New("parsed empty wbi keys")
+	}
+	return imgKey, subKey, nil
 }
 
 func swapString(s string, x, y int) string {

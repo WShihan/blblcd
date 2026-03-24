@@ -19,7 +19,10 @@ func FetchVideoList(mid int64, page int, order string, cookie string) (videoList
 	params.Set("ps", "30")
 	params.Set("tid", "0")
 
-	crypedApi, _ := SignAndGenerateURL(api+params.Encode(), cookie)
+	crypedApi, err := SignAndGenerateURL(api+params.Encode(), cookie)
+	if err != nil {
+		return videoList, err
+	}
 
 	resp, err := client.
 		Client.
@@ -30,6 +33,7 @@ func FetchVideoList(mid int64, page int, order string, cookie string) (videoList
 		Get(crypedApi)
 	if err != nil {
 		slog.Error("get json error", "err", err.Error())
+		return
 	}
 	if resp.IsErrorState() {
 		slog.Error("get json state error", "body", resp.String())

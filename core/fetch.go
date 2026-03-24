@@ -73,7 +73,11 @@ func FindComment(avid int64, opt *model.Option) {
 
 		replyCollection := []model.ReplyItem{}
 
-		cmtInfo, _ := FetchComment(oid, opt.Corder, opt.Cookie, offsetStr)
+		cmtInfo, err := FetchComment(oid, opt.Corder, opt.Cookie, offsetStr)
+		if err != nil {
+			slog.Error(fmt.Sprintf("请求评论失败，视频%s，第%d页失败", filename, round), "err", err)
+			break
+		}
 		if cmtInfo.Code != 0 {
 			slog.Error(fmt.Sprintf("请求评论失败，视频%s，第%d页失败", filename, round))
 			slog.Error(cmtInfo.Message)
@@ -184,7 +188,11 @@ func FindSubComment(cmt model.ReplyItem, opt *model.Option) []model.ReplyItem {
 	for {
 		round++
 
-		cmtInfo, _ := FetchSubComment(oid, cmt.Rpid, round, opt.Cookie)
+		cmtInfo, err := FetchSubComment(oid, cmt.Rpid, round, opt.Cookie)
+		if err != nil {
+			slog.Error(fmt.Sprintf("请求子评论失败，父评论%d，第%d页失败", cmt.Rpid, round), "err", err)
+			break
+		}
 		if cmtInfo.Code != 0 {
 			slog.Error(fmt.Sprintf("请求子评论失败，父评论%d，第%d页失败", cmt.Rpid, round))
 			slog.Error(cmtInfo.Message)
@@ -240,7 +248,11 @@ func FindUser(sem chan struct{}, opt *model.Option) {
 	var videoCollection = []model.VideoItem{}
 	for round <= opt.Pages+opt.Skip {
 		slog.Info(fmt.Sprintf("爬取视频列表第%d页", round))
-		tempVideoInfo, _ := FetchVideoList(opt.Mid, round, opt.Vorder, opt.Cookie)
+		tempVideoInfo, err := FetchVideoList(opt.Mid, round, opt.Vorder, opt.Cookie)
+		if err != nil {
+			slog.Error(fmt.Sprintf("请求up主视频列表失败，第%d页失败", round), "err", err)
+			break
+		}
 		round++
 		if tempVideoInfo.Code != 0 {
 			slog.Error(fmt.Sprintf("请求up主视频列表失败，第%d页失败", round))
