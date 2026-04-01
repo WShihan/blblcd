@@ -16,8 +16,9 @@ func init() {
 }
 
 var latestCmd = &cobra.Command{
-	Use:   "latest",
-	Short: "获取up主最新视频的评论",
+	Use:     "latest [mid]",
+	Example: "blblcd latest 3706924090526175",
+	Short:   "获取up主最新视频的评论",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			fmt.Println("please provide up mid")

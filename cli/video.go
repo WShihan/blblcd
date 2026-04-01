@@ -15,8 +15,9 @@ func init() {
 }
 
 var videoCmd = &cobra.Command{
-	Use:   "video",
-	Short: "获取视频评论，支持单个和多个视频",
+	Use:     "video [bvid]",
+	Example: "blblcd video  BV1e7NRemEwv",
+	Short:   "获取视频评论，支持单个和多个视频",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			fmt.Println("please provide bvid")

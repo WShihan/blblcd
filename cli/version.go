@@ -11,8 +11,9 @@ func init() {
 }
 
 var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "查看版本及构建信息",
+	Use:     "version",
+	Example: "blblcd version",
+	Short:   "查看版本及构建信息",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf(`
 author: %s

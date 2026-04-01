@@ -32,9 +32,10 @@ func init() {
 }
 
 var statsCmd = &cobra.Command{
-	Use:   "stats",
-	Short: "统计本地CSV文件数据",
-	Long:  `统计本地CSV文件数据，支持区域分布、性别分布、等级分布等统计`,
+	Use:     "stats [path]",
+	Example: "blblcd stats ./output/bvidsdfs.csv",
+	Short:   "统计本地CSV文件数据",
+	Long:    `统计本地CSV文件数据，支持区域分布、性别分布、等级分布等统计`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			fmt.Println("错误：必须指定输入文件或目录路径（使用 -i 参数）")

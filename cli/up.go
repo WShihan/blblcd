@@ -25,8 +25,9 @@ func init() {
 }
 
 var upCmd = &cobra.Command{
-	Use:   "up",
-	Short: "批量获取UP主视频列表的评论",
+	Use:     "up [mid]",
+	Example: "blblcd up 3706924090526175 -c ./cookie.txt",
+	Short:   "批量获取UP主视频列表的评论",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			fmt.Println("please provide mid")
