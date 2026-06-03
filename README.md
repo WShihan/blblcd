@@ -29,7 +29,7 @@ blblcd（Bilibili Comment Dowloader），一款基于 [bilibili-API-collect](htt
 
 ⚠️ 请注意
 
-> 最新代码托管在[Codeberg](https://codeberg.org/wsh233/blblcd)，本仓库仅作为备份，同步更新可能存在延迟。由于GitHub访问原因，0.1.8之后的版本，其编译后的二进制产物将只发布在[Codeberg Releases](https://codeberg.org/wsh233/blblcd/releases) 。
+> 最新代码托管在[Codeberg](https://codeberg.org/wsh233/blblcd)，本仓库仅作为备份，同步更新可能存在延迟。由于GitHub访问原因，0.1.8之后的版本，其编译后的二进制产物将只发布在 Codeberg [Releases](https://codeberg.org/wsh233/blblcd/releases) 。
 
 爬取评论信息如下：
 
@@ -57,6 +57,14 @@ blblcd（Bilibili Comment Dowloader），一款基于 [bilibili-API-collect](htt
 ![image-20240816044237687](https://md-1301600412.cos.ap-nanjing.myqcloud.com/pic/typora/image-20240816044237687.png)
 
 # 使用
+
+
+
+## 下载blblcd
+
+根据系统类型，下载预编译好的[二进制文件](https://codeberg.org/wsh233/blblcd/releases) 。
+
+如需在智能体中使用blblcd，可点击下载[skill文档](./SKILL.md)。
 
 ## 需要准备
 
