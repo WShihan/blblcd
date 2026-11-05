@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          # 跟随 go.mod 的 go 指令：低于 1.27.3 的 stable 版本会带着已修复的 stdlib 漏洞发布
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install debpkg
+        run: go install github.com/xor-gate/debpkg/cmd/debpkg@latest
+
+      - run: make
+
+      - name: Package binaries
+        run: |
+          cd bin
+          for file in *; do
+            if [ -f "$file" ] && [[ "$file" != *.tar.gz ]] && [[ "$file" != *.deb ]]; then
+              tar czf "${file}.tar.gz" "$file"
+            fi
+          done
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            bin/*.tar.gz
+            bin/*.deb
+          generate_release_notes: true
