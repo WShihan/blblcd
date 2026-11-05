@@ -228,8 +228,6 @@ blblcd video BV1VJ4m1jk34K --mapping
 - 如果已有 CSV 中的 location 是空的，重新运行不会覆盖旧行；请删除该 CSV 或指定新的 `--output` 重新下载。
 
 
-[![start_history](https://api.star-history.com/svg?repos=WShihan/blblcd&type=Date)](https://star-history.com/#WShihan/blblcd&Date)
-
 
 
 ## 声明
@@ -238,3 +236,6 @@ blblcd video BV1VJ4m1jk34K --mapping
 - 使用该工具请遵守`Bilibili`相关规定。
 - blblcd不会保存或泄露`Cookie`，请放心食用。
 
+
+
+[![start_history](https://api.star-history.com/svg?repos=WShihan/blblcd&type=Date)](https://star-history.com/#WShihan/blblcd&Date)
