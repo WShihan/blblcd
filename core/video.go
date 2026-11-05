@@ -24,19 +24,18 @@ func FetchVideoList(mid int64, page int, order string, cookie string) (videoList
 		return videoList, err
 	}
 
-	resp, err := client.
-		Client.
-		R().
-		SetHeader("Origin", "https://space.bilibili.com").
-		SetHeader("Referer", client.Origin+"/"+strconv.FormatInt(mid, 10)).
-		SetHeader("Cookie", cookie).
-		Get(crypedApi)
+	resp, err := client.Get(crypedApi, map[string]string{
+		"Origin":  "https://space.bilibili.com",
+		"Referer": client.Origin + "/" + strconv.FormatInt(mid, 10),
+		"Cookie":  cookie,
+	}, nil)
 	if err != nil {
 		slog.Error("get json error", "err", err.Error())
 		return
 	}
 	if resp.IsErrorState() {
-		slog.Error("get json state error", "body", resp.String())
+		err = fmt.Errorf("请求视频列表失败: %s", resp.Status)
+		slog.Error("get json state error", "err", err.Error(), "body", resp.String())
 		return
 	}
 

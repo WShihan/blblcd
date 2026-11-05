@@ -13,4 +13,7 @@ type Option struct {
 	ImgDownload bool
 	MaxTryCount int
 	MaxDelaySec float64
+	// Concurrency 单个视频内并发请求数（主评论翻页、楼中楼及其分页）。
+	// <=0 时使用默认值。
+	Concurrency int
 }

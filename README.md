@@ -24,6 +24,8 @@ blblcd（Bilibili Comment Dowloader），一款基于 [bilibili-API-collect](htt
 
 - 这是一个命令行程序，没有图形化界面。
 - 若爬取结果数量不对只有十几条评论和网页上看到的数量不一致，那么很大概率是cookie失效导致。
+- 评论的 IP 属地（location）需要有效的登录 cookie 才会返回；B站仅对 2022-07-25 之后发布的评论提供该字段。若日志提示「cookie 未登录」或大量评论缺少 location，请更新 cookie。
+- 已存在的 CSV 不会自动更新旧行的 location；修复 cookie 后如需补齐，请删除对应 CSV 或换一个输出目录重新爬取。
 - 爬取结果的csv文件编码为utf-8，使用诸如Microsoft Office之类的办公软件打开会显示乱码，建议用记事本或者代码编辑器打开。
 - 目前以维护已有功能为主，该工具基本符合本人需求，暂不接受新增功能开发请求。当然如果你发现已有功能出现bug，欢迎提交issue，我将尽力去解决。
 
@@ -184,6 +186,20 @@ blblcd up 123344555  --output output/path
 blblcd up 123344555  --workers 10
 ```
 
+#### 速度与并发
+
+- `--workers` 同时控制视频级并发和单个视频内的请求并发（默认 5）。
+- 主评论接口单页最多返回 30 条；楼中楼会并发拉取，主评论下一页会与当前页的楼中楼处理重叠请求。
+- `--max-delay` 是每次请求前随机延迟的最大秒数（默认 1，`0` 表示不延迟）。
+
+网络状况较好时，可以适当提高并发、降低延迟：
+
+```bash
+blblcd video BV1VJ4m1jk34K --workers 8 --max-delay 0.3
+```
+
+如果出现 `412`、`-799` 等风控提示，请降低 `--workers`、提高 `--max-delay`，并确认 cookie 仍然有效。
+
 #### 输出地图统计
 
 ```bash
@@ -197,3 +213,10 @@ blblcd video BV1VJ4m1jk34K --mapping
 - 源代码仅供交流学习使用，切勿用于违法犯罪。
 - 使用该工具请遵守`Bilibili`相关规定。
 - blblcd不会保存或泄露`Cookie`，请放心食用。
+
+#### 评论没有 IP 属地？
+
+- IP 属地来自 `reply_control.location`，**只有登录态请求才会返回**；程序会在确认 cookie 已登录后才把 Cookie 发给主评论接口。
+- B站只对 **2022-07-25 之后**发布的评论返回 IP 属地，更早的评论本来就没有。
+- 程序结束时会输出缺少 location 的评论数量，并区分「cookie 未登录」和「旧评论」两种情况。
+- 如果已有 CSV 中的 location 是空的，重新运行不会覆盖旧行；请删除该 CSV 或指定新的 `--output` 重新下载。

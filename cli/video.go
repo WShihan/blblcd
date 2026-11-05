@@ -44,6 +44,7 @@ var videoCmd = &cobra.Command{
 				ImgDownload: imgDownload,
 				MaxTryCount: maxTryCount,
 				MaxDelaySec: maxDelaySec,
+				Concurrency: workers,
 			}
 
 			sem <- struct{}{}

@@ -61,6 +61,7 @@ var latestCmd = &cobra.Command{
 			ImgDownload: imgDownload,
 			MaxTryCount: maxTryCount,
 			MaxDelaySec: maxDelaySec,
+			Concurrency: workers,
 		}
 
 		core.FindComment(core.Bvid2Avid(bvid), &opt)

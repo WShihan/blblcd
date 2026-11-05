@@ -72,7 +72,6 @@ func DownloadImg(sem chan struct{}, mu *sync.Mutex, imageUrl string, output stri
 		return
 	}
 	defer outFile.Close()
-	defer outFile.Sync()
 
 	_, err = outFile.Write(imageData)
 	if err != nil {
@@ -83,18 +82,20 @@ func DownloadImg(sem chan struct{}, mu *sync.Mutex, imageUrl string, output stri
 	slog.Info("图片下载成功：" + imageUrl)
 }
 
+// imageSem 限制整个进程的图片下载并发，避免每批评论都新开一组连接。
+var imageSem = make(chan struct{}, 8)
+
 func WriteImage(mu *sync.Mutex, uname string, pics []model.Picture, output string) {
-	sem := make(chan struct{}, 5)
 	wg := sync.WaitGroup{}
 	for _, pic := range pics {
+		if pic.Img_src == "" {
+			continue
+		}
 		wg.Add(1)
 		go func(imageUrl string) {
 			defer wg.Done()
-			DownloadImg(sem, mu, imageUrl, output, uname)
+			DownloadImg(imageSem, mu, imageUrl, output, uname)
 		}(pic.Img_src)
-
-		utils.RandomDelay(1)
-
 	}
 	wg.Wait()
 }

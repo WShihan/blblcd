@@ -89,92 +89,87 @@ func ReadExistCommentRpids(filename string) (map[int64]bool, error) {
 	return existRpids, nil
 }
 
+// Save2CSV 把一页评论追加到 CSV，图片下载放在 CSV 锁之外，
+// 避免图片下载期间阻塞其他页的写盘。
 func Save2CSV(csvMutex *sync.Mutex, imageMutex *sync.Mutex, basename string, cmts []model.Comment, output string, downloadIMG bool) {
-	csvMutex.Lock()
-	defer csvMutex.Unlock()
-
-	utils.PresetPath(output)
 	if len(cmts) == 0 {
 		return
 	}
-	var wg sync.WaitGroup
-	csvPath := filepath.Join(output, basename+".csv")
-	if utils.FileOrPathExists(csvPath) {
-		file, err := os.OpenFile(csvPath, os.O_WRONLY|os.O_APPEND, 0666)
-		if err != nil {
-			slog.Error(fmt.Sprintf("打开csv文件错误，oid:%d", cmts[0].Oid))
-			return
+
+	records := make([]model.Comment, 0, len(cmts))
+	for _, cmt := range cmts {
+		if cmt.Uname != "" {
+			records = append(records, cmt)
 		}
-		defer file.Close()
-		defer file.Sync()
-
-		writer := csv.NewWriter(file)
-		defer writer.Flush()
-
-		for _, cmt := range cmts {
-			if cmt.Uname == "" {
-				continue
-			}
-			if downloadIMG {
-				if len(cmt.Pictures) != 0 {
-					wg.Add(1)
-					go func(c model.Comment) {
-						defer wg.Done()
-						WriteImage(imageMutex, c.Uname, c.Pictures, output+"/"+"images")
-					}(cmt)
-				}
-			}
-
-			record := CMT2Record(cmt)
-			err = writer.Write(record)
-			if err != nil {
-				slog.Error(fmt.Sprintf("追加评论至csv文件错误，oid:%d", cmt.Oid))
-			}
-		}
-
-		slog.Info(fmt.Sprintf("追加评论至csv文件成功，oid:%d", cmts[0].Oid))
-
-	} else {
-		file, err := os.OpenFile(csvPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
-		if err != nil {
-			slog.Error(fmt.Sprintf("创建csv文件错误，oid:%d", cmts[0].Oid))
-			return
-		}
-		defer file.Close()
-		defer file.Sync()
-
-		writer := csv.NewWriter(file)
-		defer writer.Flush()
-		headers := "bvid,upname,sex,content,pictures,rpid,oid,mid,parent,fans_grade,ctime,like,level,location"
-		headerErr := writer.Write(strings.Split(headers, ","))
-		if headerErr != nil {
-			slog.Error(fmt.Sprintf("写入csv文件字段错误，oid:%d", cmts[0].Oid))
-			return
-		}
-
-		for _, cmt := range cmts {
-			if cmt.Uname == "" {
-				continue
-			}
-			if downloadIMG {
-				if len(cmt.Pictures) != 0 {
-					wg.Add(1)
-					go func(c model.Comment) {
-						defer wg.Done()
-						WriteImage(imageMutex, c.Uname, c.Pictures, output+"/"+"images")
-					}(cmt)
-				}
-			}
-
-			record := CMT2Record(cmt)
-			err := writer.Write(record)
-			if err != nil {
-				slog.Error(fmt.Sprintf("写入csv文件错误，oid:%d", cmt.Oid))
-				return
-			}
-		}
-		slog.Info(fmt.Sprintf("写入csv文件成功，oid:%d", cmts[0].Oid))
+	}
+	if len(records) == 0 {
+		return
 	}
 
+	csvPath := filepath.Join(output, basename+".csv")
+	utils.PresetPath(output)
+
+	csvMutex.Lock()
+	appended := utils.FileOrPathExists(csvPath)
+	err := appendRecords(csvPath, records)
+	csvMutex.Unlock()
+	if err != nil {
+		slog.Error(fmt.Sprintf("写入csv文件错误，oid:%d", records[0].Oid), "err", err)
+		return
+	}
+	if appended {
+		slog.Info(fmt.Sprintf("追加评论至csv文件成功，oid:%d", records[0].Oid))
+	} else {
+		slog.Info(fmt.Sprintf("写入csv文件成功，oid:%d", records[0].Oid))
+	}
+
+	if !downloadIMG {
+		return
+	}
+
+	var wg sync.WaitGroup
+	for _, cmt := range records {
+		if len(cmt.Pictures) == 0 {
+			continue
+		}
+		wg.Add(1)
+		go func(c model.Comment) {
+			defer wg.Done()
+			WriteImage(imageMutex, c.Uname, c.Pictures, filepath.Join(output, "images"))
+		}(cmt)
+	}
 	wg.Wait()
+}
+
+// appendRecords 打开并追加一页记录；文件为空时补上表头。
+// 不使用 fsync，依赖操作系统缓冲，避免每页一次同步写盘。
+func appendRecords(csvPath string, records []model.Comment) error {
+	file, err := os.OpenFile(csvPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		return err
+	}
+
+	info, statErr := file.Stat()
+	writer := csv.NewWriter(file)
+	if statErr == nil && info.Size() == 0 {
+		headers := "bvid,upname,sex,content,pictures,rpid,oid,mid,parent,fans_grade,ctime,like,level,location"
+		if err := writer.Write(strings.Split(headers, ",")); err != nil {
+			file.Close()
+			return err
+		}
+	}
+
+	for _, cmt := range records {
+		if err := writer.Write(CMT2Record(cmt)); err != nil {
+			file.Close()
+			return err
+		}
+	}
+
+	writer.Flush()
+	if err := writer.Error(); err != nil {
+		file.Close()
+		return err
+	}
+	return file.Close()
 }

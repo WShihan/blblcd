@@ -3,6 +3,7 @@ package utils
 import (
 	"blblcd/model"
 	"testing"
+	"time"
 )
 
 func TestFileOrPathExists(t *testing.T) {
@@ -51,4 +52,12 @@ func TestProgressBar(t *testing.T) {
 func TestPrintLogo(t *testing.T) {
 	PrintLogo()
 	t.Log("")
+}
+
+func TestRandomDelayDisabled(t *testing.T) {
+	start := time.Now()
+	RandomDelay(0)
+	if d := time.Since(start); d > 50*time.Millisecond {
+		t.Errorf("RandomDelay(0) 不应等待，实际等待了 %v", d)
+	}
 }

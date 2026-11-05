@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"blblcd/client"
 	"blblcd/model"
 	"fmt"
 	"os"
@@ -33,10 +34,14 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&output, "output", "o", "./output", "保存目录")
 	rootCmd.PersistentFlags().BoolVarP(&mapping, "mapping", "m", false, "是否统计输出地图")
 	rootCmd.PersistentFlags().BoolVarP(&imgDownload, "img-download", "i", false, "是否下载评论中的图片")
-	rootCmd.PersistentFlags().IntVarP(&workers, "workers", "w", 5, "最多协程数量")
+	rootCmd.PersistentFlags().IntVarP(&workers, "workers", "w", 5, "最大并发数（视频并发数，也是单视频内请求并发数）")
 	rootCmd.PersistentFlags().IntVarP(&maxTryCount, "max-try-count", "u", 3, "当爬取结果为空时请求最大尝试次数")
-	rootCmd.PersistentFlags().Float64VarP(&maxDelaySec, "max-delay", "d", 1, "爬取最大延迟时间，单位秒")
+	rootCmd.PersistentFlags().Float64VarP(&maxDelaySec, "max-delay", "d", 1, "每次请求前随机延迟的最大秒数，0 表示不延迟")
 	rootCmd.PersistentFlags().IntVarP(&corder, "corder", "v", 2, "爬取时评论排序方式，0：按热度，1：按热度+按时间，2：按时间，3：按热度")
+
+	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
+		client.SetMaxConcurrency(workers)
+	}
 }
 
 func Execute(injection *model.Injection) {

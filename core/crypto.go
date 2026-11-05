@@ -24,6 +24,7 @@ var (
 		36, 20, 34, 44, 52,
 	}
 	cache          sync.Map
+	cacheMu        sync.Mutex
 	lastUpdateTime time.Time
 
 	XOR_CODE = int64(23442827791579)
@@ -92,6 +93,9 @@ func getMixinKey(orig string) (string, error) {
 }
 
 func updateCache(cookie string) error {
+	cacheMu.Lock()
+	defer cacheMu.Unlock()
+
 	if time.Since(lastUpdateTime).Minutes() < 10 {
 		if imgKeyI, ok := cache.Load("imgKey"); ok {
 			if subKeyI, ok := cache.Load("subKey"); ok {
@@ -140,7 +144,9 @@ func getWbiKeysCached(cookie string) (string, string, error) {
 }
 
 func getWbiKeys(cookie string) (string, string, error) {
-	resp, err := client.Client.R().SetHeader("Cookie", string(cookie)).Get("https://api.bilibili.com/x/web-interface/nav")
+	resp, err := client.Get("https://api.bilibili.com/x/web-interface/nav", map[string]string{
+		"Cookie": string(cookie),
+	}, nil)
 	if err != nil {
 		slog.Error("Error sending request", "err", err)
 		return "", "", err
@@ -149,6 +155,7 @@ func getWbiKeys(cookie string) (string, string, error) {
 		return "", "", fmt.Errorf("request nav failed: %s", resp.Status)
 	}
 	json := gjson.Parse(resp.String())
+	client.SetLoggedIn(json.Get("data.isLogin").Bool())
 	imgURL := json.Get("data.wbi_img.img_url").String()
 	subURL := json.Get("data.wbi_img.sub_url").String()
 	if imgURL == "" || subURL == "" {

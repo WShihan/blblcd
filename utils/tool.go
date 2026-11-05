@@ -134,15 +134,12 @@ func PrintLogo() {
 	fmt.Println(logo)
 }
 
-// RandomDelay 随机延迟
+// RandomDelay 在 [0, maxSec) 内随机等待，用于打散并发请求。
+// maxSec <= 0 时不等待；各协程各自等待，因此并发请求之间会自然重叠。
 func RandomDelay(maxSec float64) {
-	minSec := 1.0
-	if minSec > maxSec {
-		fmt.Println("错误: a 不能大于 b")
+	if maxSec <= 0 {
 		return
 	}
-	randomDuration := minSec + rand.Float64()*(maxSec-minSec)
-	sleepTime := time.Duration(randomDuration * float64(time.Second))
+	sleepTime := time.Duration(rand.Float64() * maxSec * float64(time.Second))
 	time.Sleep(sleepTime)
-
 }
